@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-I../build/external/raylib-master/src, -I../include, -I../src]
