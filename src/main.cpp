@@ -10,6 +10,8 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include "raylib.h"
 #include "grid.h"
 #include <algorithm>
+#include <iostream>
+#include <ostream>
 #include <utility>
 
 
@@ -30,6 +32,21 @@ void draw(const Grid* grid) {
             cell_pos.x * cell_width, cell_pos.y * cell_height,
             cell_width,  cell_height, getRaylibColour(grid->colour[i])
         );
+    }
+}
+
+void drawGridLines() {
+    int window_width = GetScreenWidth();
+    int window_height = GetScreenHeight();
+
+    int cell_width = window_width / GRID_WIDTH;
+    int cell_height = window_height / GRID_HEIGHT;
+
+    for (int x = 0; x < GRID_WIDTH; x++) {
+        DrawLine(x * cell_width, 0, x * cell_width, window_height, DARKGRAY);
+    }
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+        DrawLine(0, y * cell_height, window_width, y * cell_height, DARKGRAY);
     }
 }
 
@@ -60,6 +77,8 @@ int main ()
     Grid* current_grid = &grid_a;
     Grid* next_grid = &grid_b;
 
+    bool grid_lines = false;
+
 	// game loop
 	while (!WindowShouldClose())
 	{
@@ -67,14 +86,25 @@ int main ()
 		ClearBackground(BLACK);
 
         draw(current_grid);
+        if (grid_lines) drawGridLines();
 
 		EndDrawing();
 
         //Update
+        if (IsKeyPressed(KEY_G)) {
+            grid_lines = !grid_lines;
+        }
+
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            current_grid->colour[mouseToGrid()] = CellColour::Blue;
+            if (current_grid->colour[mouseToGrid()] == CellColour::Blue)
+                current_grid->colour[mouseToGrid()] = CellColour::Blank;
+            else
+                current_grid->colour[mouseToGrid()] = CellColour::Blue;
         } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            current_grid->colour[mouseToGrid()] = CellColour::Red;
+            if (current_grid->colour[mouseToGrid()] == CellColour::Red)
+                current_grid->colour[mouseToGrid()] = CellColour::Blank;
+            else
+                current_grid->colour[mouseToGrid()] = CellColour::Red;
         }
 
         if (IsKeyPressed(KEY_ENTER)) *current_grid = {};
