@@ -51,7 +51,7 @@ void update(const Grid* original, Grid* target) {
                 vec.x = pos.x - x != 0 ? 1/float(pos.x - x) : 0;
                 vec.y = pos.y - y != 0 ? 1/float(pos.y - y) : 0;
 
-                if (original->colour[neighbour_index] != original->colour[i]) {
+                if (original->colour[neighbour_index] == original->colour[i]) {
                     vec.x *= -1;
                     vec.y *= -1;
                 }

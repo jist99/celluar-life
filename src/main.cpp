@@ -62,10 +62,13 @@ int main ()
 
 
         //Update
-        update(current_grid, next_grid);
-        std::swap(current_grid, next_grid);
+        if (IsKeyPressed(KEY_SPACE)) {
+            update(current_grid, next_grid);
+            std::swap(current_grid, next_grid);
+            *next_grid = {};
+        }
 
-        WaitTime(1.0);
+        //WaitTime(1.0);
 	}
 
 	// destroy the window and cleanup the OpenGL context
