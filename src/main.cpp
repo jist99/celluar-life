@@ -33,6 +33,19 @@ void draw(const Grid* grid) {
     }
 }
 
+int mouseToGrid() {
+    int window_width = GetScreenWidth();
+    int window_height = GetScreenHeight();
+
+    int cell_width = window_width / GRID_WIDTH;
+    int cell_height = window_height / GRID_HEIGHT;
+
+    Vector2 mouse_pos = GetMousePosition();
+    int mouse_x = int(mouse_pos.x / cell_width);
+    int mouse_y = int(mouse_pos.y / cell_height);
+    return gridIndex({mouse_x, mouse_y});
+}
+
 int main ()
 {
 	// Tell the window to use vsync and work on high DPI displays
@@ -44,9 +57,6 @@ int main ()
     Grid grid_a = {};
     Grid grid_b = {};
     
-    grid_a.colour[0] = CellColour::Blue;
-    grid_a.colour[10] = CellColour::Blue;
-
     Grid* current_grid = &grid_a;
     Grid* next_grid = &grid_b;
 
@@ -60,8 +70,13 @@ int main ()
 
 		EndDrawing();
 
-
         //Update
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            current_grid->colour[mouseToGrid()] = CellColour::Blue;
+        } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            current_grid->colour[mouseToGrid()] = CellColour::Red;
+        }
+
         if (IsKeyPressed(KEY_SPACE)) {
             update(current_grid, next_grid);
             std::swap(current_grid, next_grid);
