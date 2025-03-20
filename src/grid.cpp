@@ -36,44 +36,37 @@ void update(const Grid* original, Grid* target) {
     // direction pass
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         Vi2D pos = gridXY(i);
-        Vector2 force = {0,0};
+        Vf2D force = {0,0};
 
         for (int x = pos.x - neighbour_range; x < pos.x + neighbour_range; x++) {
             for (int y = pos.y - neighbour_range; y < pos.y + neighbour_range; y++) {
-                int neighbour_index = gridIndex({x, y});
+                Vi2D neighbour_pos = Vi2D{x, y};
+                int neighbour_index = gridIndex(neighbour_pos);
 
-                if (!inBounds({x,y})) continue;
+                if (!inBounds(neighbour_pos)) continue;
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
-                if (pos.x == x && pos.y == y) continue;
+                if (pos == neighbour_pos) continue;
 
-                // TODO: Need some global repulsion when too close
+                Vf2D vec = {
+                    pos.x - neighbour_pos.x != 0 ? 1/float(pos.x - neighbour_pos.x) : 0,
+                    pos.y - neighbour_pos.y != 0 ? 1/float(pos.y - neighbour_pos.y) : 0,
+                };
+                vec = vec.norm();
 
-                Vector2 vec = {};
-                vec.x = pos.x - x != 0 ? 1/float(pos.x - x) : 0;
-                vec.y = pos.y - y != 0 ? 1/float(pos.y - y) : 0;
-
-                float vec_magnitude = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-                vec.x /= vec_magnitude;
-                vec.y /= vec_magnitude;
-
-                bool repulse = std::abs(pos.x - x) <= repulsion_range && std::abs(pos.y - y) <= repulsion_range;
+                Vi2D repulsion_dist = (pos - neighbour_pos).abs();
+                bool repulse = repulsion_dist.x <= repulsion_range && repulsion_dist.y <= repulsion_range;
                 if (repulse) {
-                    vec.x *= 16*16;
-                    vec.y *= 16*16;
+                    vec = vec * 16*16;
                 }
 
                 if (!repulse && original->colour[neighbour_index] == original->colour[i]) {
-                    vec.x *= -1;
-                    vec.y *= -1;
+                    vec = -vec;
                 }
-                force.x += vec.x;
-                force.y += vec.y;
+                force += vec;
             }
         }
 
-        float force_magnitude = std::sqrt(force.x * force.x + force.y * force.y);
-        force.x /= force_magnitude;
-        force.y /= force_magnitude;
+        force = force.norm();
 
         Vi2D direction = {0,0};
         if (force.x <= -0.1) direction.x = -1;
