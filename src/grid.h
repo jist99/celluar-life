@@ -14,20 +14,9 @@ enum CellColour {
     Blue,
 };
 
-enum Direction {
-    N,
-    NW,
-    NE,
-    E,
-    SE,
-    SW,
-    W,
-    S,
-};
-
 struct Grid {
     CellColour colour[GRID_WIDTH * GRID_HEIGHT];
-    Direction direction[GRID_WIDTH * GRID_HEIGHT];
+    Vi2D direction[GRID_WIDTH * GRID_HEIGHT];
 };
 
 int gridIndex(Vi2D);
