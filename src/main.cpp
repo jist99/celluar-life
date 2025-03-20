@@ -8,8 +8,28 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 */
 
 #include "raylib.h"
+#include "grid.h"
 
-#include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+
+void draw(const Grid* grid) {
+    int window_width = GetScreenWidth();
+    int window_height = GetScreenHeight();
+
+    //int horizontal_buffer = window_width % GRID_WIDTH;
+    //int vertical_buffer = window_height % GRID_HEIGHT;
+
+    int cell_width = window_width / GRID_WIDTH;
+    int cell_height = window_height / GRID_HEIGHT;
+
+    for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+        Vi2D cell_pos = gridXY(i);
+
+        DrawRectangle(
+            cell_pos.x * cell_width, cell_pos.y * cell_height,
+            cell_width,  cell_height, getRaylibColour(grid->colour[i])
+        );
+    }
+}
 
 int main ()
 {
@@ -17,36 +37,23 @@ int main ()
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
 	// Create the window and OpenGL context
-	InitWindow(1280, 800, "Hello Raylib");
+	InitWindow(800, 800, "Cellular Life");
 
-	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
-	SearchAndSetResourceDir("resources");
+    Grid grid;
 
-	// Load a texture from the resources directory
-	Texture wabbit = LoadTexture("wabbit_alpha.png");
-	
 	// game loop
-	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
+	while (!WindowShouldClose())
 	{
-		// drawing
-		BeginDrawing();
+        //Update
+        update(nullptr, &grid);
 
-		// Setup the back buffer for drawing (clear color and depth buffers)
+		BeginDrawing();
 		ClearBackground(BLACK);
 
-		// draw some text using the default font
-		DrawText("Hello Raylib", 200,200,20,WHITE);
+        draw(&grid);
 
-		// draw our texture to the screen
-		DrawTexture(wabbit, 400, 200, WHITE);
-		
-		// end the frame and get ready for the next one  (display frame, poll input, etc...)
 		EndDrawing();
 	}
-
-	// cleanup
-	// unload our texture so it can be cleaned up
-	UnloadTexture(wabbit);
 
 	// destroy the window and cleanup the OpenGL context
 	CloseWindow();
