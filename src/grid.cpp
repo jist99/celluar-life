@@ -31,6 +31,7 @@ Color getRaylibColour(CellColour col) {
 
 void update(const Grid* original, Grid* target) {
     const int neighbour_range = 16;
+    const int repulsion_range = 1;
 
     // direction pass
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
@@ -51,7 +52,17 @@ void update(const Grid* original, Grid* target) {
                 vec.x = pos.x - x != 0 ? 1/float(pos.x - x) : 0;
                 vec.y = pos.y - y != 0 ? 1/float(pos.y - y) : 0;
 
-                if (original->colour[neighbour_index] == original->colour[i]) {
+                float vec_magnitude = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+                vec.x /= vec_magnitude;
+                vec.y /= vec_magnitude;
+
+                bool repulse = std::abs(pos.x - x) <= repulsion_range && std::abs(pos.y - y) <= repulsion_range;
+                if (repulse) {
+                    vec.x *= 16*16;
+                    vec.y *= 16*16;
+                }
+
+                if (!repulse && original->colour[neighbour_index] == original->colour[i]) {
                     vec.x *= -1;
                     vec.y *= -1;
                 }
@@ -60,18 +71,15 @@ void update(const Grid* original, Grid* target) {
             }
         }
 
-        if (target->colour[i] != CellColour::Blank) {
-            std::cout << force.x << ", " << force.y << std::endl;
-        }
         float force_magnitude = std::sqrt(force.x * force.x + force.y * force.y);
         force.x /= force_magnitude;
         force.y /= force_magnitude;
 
         Vi2D direction = {0,0};
-        if (force.x <= -0.5) direction.x = -1;
-        else if (force.x >= 0.5) direction.x = 1;
-        if (force.y <= -0.5) direction.y = -1;
-        else if (force.y >= 0.5) direction.y = 1;
+        if (force.x <= -0.1) direction.x = -1;
+        else if (force.x >= 0.1) direction.x = 1;
+        if (force.y <= -0.1) direction.y = -1;
+        else if (force.y >= 0.1) direction.y = 1;
 
         target->direction[i] = direction;
     }

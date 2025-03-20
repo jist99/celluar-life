@@ -77,6 +77,8 @@ int main ()
             current_grid->colour[mouseToGrid()] = CellColour::Red;
         }
 
+        if (IsKeyPressed(KEY_ENTER)) *current_grid = {};
+
         if (IsKeyPressed(KEY_SPACE)) {
             update(current_grid, next_grid);
             std::swap(current_grid, next_grid);
