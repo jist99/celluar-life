@@ -35,17 +35,19 @@ void update(const Grid* original, Grid* target) {
 
     // direction pass
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+        if (original->colour[i] == CellColour::Blank) continue;
         Vi2D pos = gridXY(i);
         Vf2D force = {0,0};
 
-        for (int x = pos.x - neighbour_range; x < pos.x + neighbour_range; x++) {
-            for (int y = pos.y - neighbour_range; y < pos.y + neighbour_range; y++) {
+        for (int x = pos.x - neighbour_range; x <= pos.x + neighbour_range; x++) {
+            for (int y = pos.y - neighbour_range; y <= pos.y + neighbour_range; y++) {
                 Vi2D neighbour_pos = Vi2D{x, y};
                 int neighbour_index = gridIndex(neighbour_pos);
 
                 if (!inBounds(neighbour_pos)) continue;
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
+                if (pos.distance(neighbour_pos) > neighbour_range) continue;
 
                 Vf2D vec = {
                     pos.x - neighbour_pos.x != 0 ? 1/float(pos.x - neighbour_pos.x) : 0,
