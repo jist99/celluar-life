@@ -1,12 +1,10 @@
+#pragma once
+
 #include "raylib.h"
+#include "vector2d.h"
 
 #define GRID_WIDTH 50
 #define GRID_HEIGHT 50
-
-struct Vi2D {
-    int x;
-    int y;
-};
 
 enum CellColour {
     Blank,
