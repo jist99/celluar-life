@@ -22,3 +22,5 @@ Vi2D gridXY(int);
 Color getRaylibColour(CellColour);
 
 void update(const Grid* original, Grid* target);
+Vf2D getForce(Vi2D cell_pos);
+Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b);

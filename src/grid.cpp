@@ -104,3 +104,42 @@ void update(const Grid* original, Grid* target) {
         else if (red_votes > blue_votes) target->colour[i] = CellColour::Red;
     }
 }
+
+
+//TODO: get force based on coefficient of attraction/repulsion with colour
+//Based on particle life: Standard linear repulsion up to distance dRep, then Linear increase up to
+//(dMax-dRep)/2 then linear decrease to 0 up to dMax
+//at coeff = 1 force = 
+//get the force acting on a specific cell
+Vf2D getForce(Vi2D cell_pos, const int repulsion_distance, const int max_distance, const float coeff)
+{
+    //for each cell in neighbourhood get force between cells
+}
+
+//calculate force of cell b on cell a
+Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b)
+{
+    //get colour of each cell
+    //get coefficient between colours
+    //calculate distance between cells
+    
+    //calculate magnitude of force between cells
+    float force = 0;
+    if(distance < repulsion_distance)
+    {
+        //linear force increase from -1 at d=0 to 0 at repulsion_distance
+        force = (distance/repulsion_distance) - 1;
+    }
+    else if (distance < ((max_distance-repulsion_distance)/2))
+    {
+        //linear force increase up to max value of coeff
+        force = ((2*coeff) / (max_distance - 3*repulsion_distance)) * (distance - repulsion_distance);
+    }
+    else if (distance < max_distance)
+    {
+        //linear force decrease to 0 at max_distance
+        force = -((2*coeff) / (max_distance - 3*repulsion_distance)) * (distance - max_distance);
+    }
+
+    //get x and y components of force on cell a
+}
