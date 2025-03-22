@@ -66,6 +66,13 @@ int main ()
     Grid* current_grid = &grid_a;
     Grid* next_grid = &grid_b;
 
+    //Coefficients of attraction of each pair of colours (default 0)
+    float colour_attraction[NUM_COLOURS][NUM_COLOURS] = {};
+    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] = 1;
+    colour_attraction[CellColour::Red-1][CellColour::Red-1] = 1;
+    colour_attraction[CellColour::Red-1][CellColour::Blue-1] = -1;
+    colour_attraction[CellColour::Blue-1][CellColour::Red-1] = -1;
+
     bool grid_lines = false;
 
 	// game loop
@@ -99,7 +106,7 @@ int main ()
         if (IsKeyPressed(KEY_ENTER)) *current_grid = {};
 
         if (IsKeyPressed(KEY_SPACE)) {
-            update(current_grid, next_grid);
+            update(current_grid, next_grid, colour_attraction);
             std::swap(current_grid, next_grid);
             *next_grid = {};
         }

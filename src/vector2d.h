@@ -109,6 +109,12 @@ struct V2D {
         return V2D{std::abs(x), std::abs(y)};
     }
 
+    constexpr auto distance(const V2D& other) const {
+        // We could consider a distance^2'd function if
+        // the sqrt here ever becomes a bottleneck
+        return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
+    }
+    
     std::string str() const {
         return std::string("(") + std::to_string(x) + "," + std::to_string(y) + ")";
     }
