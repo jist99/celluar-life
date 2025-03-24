@@ -3,8 +3,10 @@
 #include <cmath>
 
 void update(const Particles* original, Particles* target, const float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
-    const float neighbour_range = 100;
-    const float repulsion_range = 2;
+    const float neighbour_range = 800;
+    const float repulsion_range = 16;
+
+    std::vector<int> to_erase = {}; 
 
     //get force acting on each particle
     for (int i = 0; i < original->particles.size(); i++)
@@ -34,16 +36,20 @@ void update(const Particles* original, Particles* target, const float colour_att
 
         //if position is out of bounds, remove it (TODO: is this what we want?)
         if(!particleInBounds(new_pos))
-            target->particles.erase(target->particles.begin() + i);
+        {
+            to_erase.push_back(i);
+        }
         else
             target->particles.at(i).position = new_pos;
     }
+    for (int i_erase : to_erase)
+        target->particles.erase(target->particles.begin() + i_erase);
 }
 
 Vf2D getForceBetweenParticles(const Particle& particle_a, const Particle& particle_b, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], float repulsion_distance, float max_distance)
 {
     //get coefficient between colours (b acting on a)
-    float coeff = colour_attraction[(particle_a.colour) - 1][(particle_b.colour) - 1] * 5;
+    float coeff = colour_attraction[(particle_a.colour) - 1][(particle_b.colour) - 1] * 16;
 
     //calculate distance between cells
     float distance = particle_a.position.distance(particle_b.position);
