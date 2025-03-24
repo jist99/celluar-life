@@ -1,54 +1,40 @@
 #include "raylib.h"
 #include "grid.h"
+#include "vector2d.h"
 #include <algorithm>
 #include <utility>
 
 
+Vi2D getCellSize() {
+    return Vi2D{GetScreenWidth() / GRID_WIDTH, GetScreenHeight() / GRID_HEIGHT};
+}
+
 void draw(const Grid* grid) {
-    int window_width = GetScreenWidth();
-    int window_height = GetScreenHeight();
-
-    //int horizontal_buffer = window_width % GRID_WIDTH;
-    //int vertical_buffer = window_height % GRID_HEIGHT;
-
-    int cell_width = window_width / GRID_WIDTH;
-    int cell_height = window_height / GRID_HEIGHT;
+    Vi2D cell_size = getCellSize();
 
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         Vi2D cell_pos = gridXY(i);
-
-        DrawRectangle(
-            cell_pos.x * cell_width, cell_pos.y * cell_height,
-            cell_width,  cell_height, getRaylibColour(grid->colour[i])
-        );
+        DrawRectangleV(cell_pos * cell_size, cell_size, getRaylibColour(grid->colour[i]));
     }
 }
 
 void drawGridLines() {
-    int window_width = GetScreenWidth();
-    int window_height = GetScreenHeight();
-
-    int cell_width = window_width / GRID_WIDTH;
-    int cell_height = window_height / GRID_HEIGHT;
+    Vi2D cell_size = getCellSize();
 
     for (int x = 0; x < GRID_WIDTH; x++) {
-        DrawLine(x * cell_width, 0, x * cell_width, window_height, DARKGRAY);
+        DrawLine(x * cell_size.x, 0, x * cell_size.x, GetScreenHeight(), DARKGRAY);
     }
     for (int y = 0; y < GRID_HEIGHT; y++) {
-        DrawLine(0, y * cell_height, window_width, y * cell_height, DARKGRAY);
+        DrawLine(0, y * cell_size.y, GetScreenWidth(), y * cell_size.y, DARKGRAY);
     }
 }
 
 int mouseToGrid() {
-    int window_width = GetScreenWidth();
-    int window_height = GetScreenHeight();
-
-    int cell_width = window_width / GRID_WIDTH;
-    int cell_height = window_height / GRID_HEIGHT;
+    Vi2D cell_size = getCellSize();
 
     Vector2 mouse_pos = GetMousePosition();
-    int mouse_x = int(mouse_pos.x / cell_width);
-    int mouse_y = int(mouse_pos.y / cell_height);
+    int mouse_x = int(mouse_pos.x / cell_size.x);
+    int mouse_y = int(mouse_pos.y / cell_size.y);
     return gridIndex({mouse_x, mouse_y});
 }
 
