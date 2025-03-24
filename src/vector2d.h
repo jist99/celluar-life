@@ -1,4 +1,5 @@
 #pragma once
+#include "raylib.h"
 #include <cmath>
 #include <string>
 #include <type_traits>
@@ -114,7 +115,7 @@ struct V2D {
         // the sqrt here ever becomes a bottleneck
         return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
     }
-    
+
     std::string str() const {
         return std::string("(") + std::to_string(x) + "," + std::to_string(y) + ")";
     }
@@ -123,6 +124,11 @@ struct V2D {
     template <class F>
     constexpr operator V2D<F>() const {
         return {static_cast<F>(x), static_cast<F>(y)};
+    }
+
+    // Allow casting to Raylib Vector2 type
+    constexpr operator Vector2() const {
+        return Vector2{static_cast<float>(x), static_cast<float>(y)};
     }
 };
 
@@ -139,6 +145,7 @@ constexpr V2D<T> operator*(const T& b, const V2D<T>& a) {return a * b;}
 
 template <class T>
 constexpr V2D<T> operator/(const T& b, const V2D<T>& a) {return a / b;}
+
 
 // Handy typedefs that are ready to rock!
 typedef V2D<int> Vi2D;

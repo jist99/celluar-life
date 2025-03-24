@@ -39,14 +39,15 @@ void update(const Grid* original, Grid* target, const float colour_attraction[NU
         Vi2D pos = gridXY(i);
         Vf2D force = {0,0};
 
-        for (int x = pos.x - neighbour_range; x < pos.x + neighbour_range; x++) {
-            for (int y = pos.y - neighbour_range; y < pos.y + neighbour_range; y++) {
+        for (int x = pos.x - neighbour_range; x <= pos.x + neighbour_range; x++) {
+            for (int y = pos.y - neighbour_range; y <= pos.y + neighbour_range; y++) {
                 Vi2D neighbour_pos = Vi2D{x, y};
                 int neighbour_index = gridIndex(neighbour_pos);
 
                 if (!inBounds(neighbour_pos)) continue;
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
+                if (pos.distance(neighbour_pos) > neighbour_range) continue;
 
                 force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
             }
