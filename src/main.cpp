@@ -49,25 +49,9 @@ int mouseToGrid() {
     return gridIndex({mouse_x, mouse_y});
 }
 
-int main ()
-{
-	// Tell the window to use vsync and work on high DPI displays
-	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
-
-	// Create the window and OpenGL context
-	InitWindow(800, 800, "Cellular Life");
-
-    //Coefficients of attraction of each pair of colours (default 0)
-    float colour_attraction[NUM_COLOURS][NUM_COLOURS] = {};
-    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] = 1;
-    colour_attraction[CellColour::Red-1][CellColour::Red-1] = 1;
-    colour_attraction[CellColour::Red-1][CellColour::Blue-1] = -1;
-    colour_attraction[CellColour::Blue-1][CellColour::Red-1] = -1;
-
+void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     bool grid_lines = false;
 
-
-    #ifdef PARTICLE
     Particles particles_a = {};
     Particles particles_b = {};
 
@@ -95,14 +79,14 @@ int main ()
             Particle blue_p;
             blue_p.colour = CellColour::Blue;
             Vector2 pos = GetMousePosition();
-            blue_p.position = {pos.x, pos.y};
+            blue_p.position = {int(pos.x), int(pos.y)};
             current_particles->particles.push_back(blue_p);
             next_particles->particles.push_back(blue_p);
         } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
             Particle red_p;
             red_p.colour = CellColour::Red;
             Vector2 pos = GetMousePosition();
-            red_p.position = {pos.x, pos.y};
+            red_p.position = {int(pos.x), int(pos.y)};
             current_particles->particles.push_back(red_p);
             next_particles->particles.push_back(red_p);
         }
@@ -119,8 +103,16 @@ int main ()
         }
 
         //WaitTime(1.0);
+        
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            return;
+        }
 	}
-    #else
+}
+
+void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+    bool grid_lines = false;
+
     Grid grid_a = {};
     Grid grid_b = {};
     
@@ -164,8 +156,65 @@ int main ()
         }
 
         //WaitTime(1.0);
+        
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            return;
+        }
 	}
-    #endif
+}
+
+int main ()
+{
+	// Tell the window to use vsync and work on high DPI displays
+	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+
+	// Create the window and OpenGL context
+	InitWindow(800, 800, "Cellular Life");
+    SetExitKey(KEY_NULL);
+
+    //Coefficients of attraction of each pair of colours (default 0)
+    float colour_attraction[NUM_COLOURS][NUM_COLOURS] = {};
+    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] = 1;
+    colour_attraction[CellColour::Red-1][CellColour::Red-1] = 1;
+    colour_attraction[CellColour::Red-1][CellColour::Blue-1] = -1;
+    colour_attraction[CellColour::Blue-1][CellColour::Red-1] = -1;
+
+    // Ask the user which game they want to start particle or cellular
+    while (!WindowShouldClose()) {
+        // Having these two while loops with the same exit condition may seem strange
+        // but we need to ensure that when in the inner loop (the main menu)
+        // that we can exit properly, and when in a game that exiting works also
+
+        bool cellular_game = false;
+        while (!WindowShouldClose()) {
+            bool mouse_left = GetMouseX() < GetScreenWidth() / 2;
+
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                if (mouse_left) {
+                    cellular_game = true;
+                }
+                break;
+            }
+
+            BeginDrawing();
+            DrawText("Click on a game to start", GetScreenWidth()/2 - 200, 20, 32, WHITE);
+            DrawText("Cellular", 100, GetScreenHeight() / 2, 32, mouse_left ? BLUE : WHITE);
+            DrawText("Particle", GetScreenWidth()/2 + 100, GetScreenHeight() / 2, 32, !mouse_left ? RED : WHITE);
+            EndDrawing();
+        }
+
+        // Deal with when we want to exit from the main menu
+        if (WindowShouldClose()) {
+            CloseWindow();
+            return 0;
+        }
+
+        if (cellular_game) {
+            cellularGame(colour_attraction);
+        } else {
+            particleGame(colour_attraction);
+        }
+    }
 
 	// destroy the window and cleanup the OpenGL context
 	CloseWindow();
