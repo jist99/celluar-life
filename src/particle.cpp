@@ -25,6 +25,7 @@ void update(const Particles* original, Particles* target, const float colour_att
         //normalise force (TODO: done this way for parity for now may want to just apply force directly to particles)
         //force = force.norm();
 
+        std::cout << force.str() << std::endl;
         //todo: fix how force normalisation works
 
         //round force to number of pixels to move

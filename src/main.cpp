@@ -174,10 +174,10 @@ int main ()
 
     //Coefficients of attraction of each pair of colours (default 0)
     float colour_attraction[NUM_COLOURS][NUM_COLOURS] = {};
-    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] = 1;
-    colour_attraction[CellColour::Red-1][CellColour::Red-1] = 1;
-    colour_attraction[CellColour::Red-1][CellColour::Blue-1] = -1;
-    colour_attraction[CellColour::Blue-1][CellColour::Red-1] = -1;
+    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] =  1;
+    colour_attraction[CellColour::Red-1][CellColour::Red-1]   =  1;
+    colour_attraction[CellColour::Red-1][CellColour::Blue-1]  = -1;
+    colour_attraction[CellColour::Blue-1][CellColour::Red-1]  = -1;
 
     // Ask the user which game they want to start particle or cellular
     while (!WindowShouldClose()) {
