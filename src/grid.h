@@ -3,8 +3,8 @@
 #include "raylib.h"
 #include "vector2d.h"
 
-#define GRID_WIDTH 50
-#define GRID_HEIGHT 50
+#define GRID_WIDTH 100
+#define GRID_HEIGHT 100
 #define NUM_COLOURS 2
 
 enum CellColour {

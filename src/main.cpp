@@ -23,9 +23,10 @@ void draw(const Grid* grid) {
 }
 
 void draw(const Particles* particles) {
+    Vi2D cell_size = getCellSize();
     for (Particle p : particles->particles)
     {
-        DrawCircle(p.position.x, p.position.y, PARTICLE_RADIUS, getRaylibColour(p.colour));
+        DrawCircleV(p.position * cell_size, PARTICLE_RADIUS, getRaylibColour(p.colour));
     }
 }
 
@@ -58,6 +59,8 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Particles* current_particles = &particles_a;
     Particles* next_particles = &particles_b;
 
+    Vf2D cell_size = getCellSize();
+
 	// game loop
 	while (!WindowShouldClose())
 	{
@@ -79,14 +82,14 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             Particle blue_p;
             blue_p.colour = CellColour::Blue;
             Vector2 pos = GetMousePosition();
-            blue_p.position = {int(pos.x), int(pos.y)};
+            blue_p.position = Vf2D{pos.x, pos.y} / cell_size;
             current_particles->particles.push_back(blue_p);
             next_particles->particles.push_back(blue_p);
         } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
             Particle red_p;
             red_p.colour = CellColour::Red;
             Vector2 pos = GetMousePosition();
-            red_p.position = {int(pos.x), int(pos.y)};
+            red_p.position = Vf2D{pos.x, pos.y} / cell_size;
             current_particles->particles.push_back(red_p);
             next_particles->particles.push_back(red_p);
         }
@@ -97,12 +100,11 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             *next_particles = {};
         } 
 
-        if (IsKeyPressed(KEY_SPACE)) {
-            update(current_particles, next_particles, colour_attraction);
-            current_particles->particles = next_particles->particles;
-        }
+        //if (IsKeyPressed(KEY_SPACE)) {
+        update(current_particles, next_particles, colour_attraction, GetFrameTime());
+        current_particles->particles = next_particles->particles;
+        //}
 
-        //WaitTime(1.0);
         
         if (IsKeyPressed(KEY_ESCAPE)) {
             return;
@@ -169,7 +171,7 @@ int main ()
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
 	// Create the window and OpenGL context
-	InitWindow(800, 800, "Cellular Life");
+	InitWindow(1000, 1000, "Cellular Life");
     SetExitKey(KEY_NULL);
 
     //Coefficients of attraction of each pair of colours (default 0)

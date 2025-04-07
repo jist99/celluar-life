@@ -1,10 +1,15 @@
 #include "particle.h"
+#include "grid.h" // This is just to get GRID_WIDTH and HEIGHT, maybe move it?
 #include <iostream>
 #include <cmath>
 
-void update(const Particles* original, Particles* target, const float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
-    const float neighbour_range = 800;
-    const float repulsion_range = 16;
+void update(
+    const Particles* original, Particles* target,
+    const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    float dt
+) {
+    const float neighbour_range = 16;
+    const float repulsion_range = 2;
 
     std::vector<int> to_erase = {}; 
 
@@ -19,21 +24,13 @@ void update(const Particles* original, Particles* target, const float colour_att
         {
             if (j == i) continue;
             Particle other_p = original->particles[j];
-            force += getForceBetweenParticles(p, other_p, colour_attraction, repulsion_range, neighbour_range);
+            force += getForceBetweenParticles(
+                p, other_p, colour_attraction, repulsion_range, neighbour_range
+            );
         }
 
-        //normalise force (TODO: done this way for parity for now may want to just apply force directly to particles)
-        //force = force.norm();
-
-        std::cout << force.str() << std::endl;
-        //todo: fix how force normalisation works
-
-        //round force to number of pixels to move
-        force.x = std::round(force.x);
-        force.y = std::round(force.y);
-
         //update position of particle in next gen with force
-        Vi2D new_pos = original->particles.at(i).position + (Vi2D)force;
+        Vf2D new_pos = original->particles.at(i).position + (force * dt);
 
         //if position is out of bounds, remove it (TODO: is this what we want?)
         if(!particleInBounds(new_pos))
@@ -47,10 +44,14 @@ void update(const Particles* original, Particles* target, const float colour_att
         target->particles.erase(target->particles.begin() + i_erase);
 }
 
-Vf2D getForceBetweenParticles(const Particle& particle_a, const Particle& particle_b, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], float repulsion_distance, float max_distance)
-{
+Vf2D getForceBetweenParticles(
+    const Particle& particle_a,
+    const Particle& particle_b,
+    const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    float repulsion_distance, float max_distance
+){
     //get coefficient between colours (b acting on a)
-    float coeff = colour_attraction[(particle_a.colour) - 1][(particle_b.colour) - 1] * 16;
+    float coeff = colour_attraction[(particle_a.colour) - 1][(particle_b.colour) - 1];
 
     //calculate distance between cells
     float distance = particle_a.position.distance(particle_b.position);
@@ -80,7 +81,7 @@ Vf2D getForceBetweenParticles(const Particle& particle_a, const Particle& partic
 
 bool particleInBounds(Vi2D pos)
 {
-    return (pos.x >= 0 && pos.x < GetScreenWidth() && pos.y >= 0 && pos.y < GetScreenHeight());
+    return (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT);
 }
 
 void printParticles(const Particles* particles)
