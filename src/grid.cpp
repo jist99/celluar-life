@@ -80,9 +80,7 @@ void update(
     // colour pass
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         Vi2D pos = gridXY(i);
-        CellColour colour = CellColour::Blank;
-        int blue_votes = 0;
-        int red_votes = 0;
+        int votes[CellColour::COUNT] = {0};
 
         for (int x = -neighbour_range; x <= +neighbour_range; x++) {
             for (int y = -neighbour_range; y <= +neighbour_range; y++) {
@@ -97,14 +95,14 @@ void update(
                 Vi2D direction = target->direction[neighbour_index];
 
                 if (direction.x + x == 0 && direction.y + y == 0) {
-                    if (neighbour_colour == CellColour::Blue) blue_votes++;
-                    else red_votes++;
+                    votes[neighbour_colour]++;
                 }
             }
         }
-
-        if (blue_votes > red_votes) target->colour[i] = CellColour::Blue;
-        else if (red_votes > blue_votes) target->colour[i] = CellColour::Red;
+        //assign the colour with most votes
+        int max_vote_i = std::distance(votes, std::max_element(votes, votes+CellColour::COUNT));
+        if(votes[max_vote_i] > 0)
+            target->colour[i] = static_cast<CellColour>(max_vote_i);
     }
 }
 
