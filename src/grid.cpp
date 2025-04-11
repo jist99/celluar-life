@@ -64,8 +64,10 @@ void update(
                 int neighbour_index = gridIndex(neighbour_pos);
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
-                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
-
+                Vi2D shadow_pos = getShadowCell(pos, neighbour_pos);
+                if(pos.distance(shadow_pos) < pos.distance(neighbour_pos))
+                    neighbour_pos = shadow_pos;
+                if (pos.distance(neighbour_pos) > neighbour_range) continue;
                 force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
             }
         }
@@ -87,11 +89,10 @@ void update(
 
                 if (!inBounds(neighbour_pos))
                     neighbour_pos = gridMod(neighbour_pos);
-                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
-
                 int neighbour_index = gridIndex({neighbour_pos.x, neighbour_pos.y});
                 CellColour neighbour_colour = original->colour[neighbour_index];
                 if (neighbour_colour == CellColour::Blank) continue;
+                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
                 Vi2D direction = target->direction[neighbour_index];
 
                 if (direction.x + x == 0 && direction.y + y == 0) {
@@ -112,10 +113,6 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 {
     //get coefficient between colours (b acting on a)
     float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][(original->colour[gridIndex(cell_pos_b)]) - 1];
-
-    Vi2D shadow_neighbour = getShadowCell(cell_pos_a, cell_pos_b);
-    if(cell_pos_a.distance(shadow_neighbour) < cell_pos_a.distance(cell_pos_b))
-        cell_pos_b = shadow_neighbour;
 
     //calculate distance between cells
     float distance = cell_pos_a.distance(cell_pos_b);

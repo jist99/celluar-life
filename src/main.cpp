@@ -23,6 +23,7 @@ void draw(const Grid* grid) {
 
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         Vi2D cell_pos = gridXY(i);
+        if(grid->colour[i] == CellColour::Blank) continue;
         DrawRectangleV(cell_pos * cell_size, cell_size, getRaylibColour(grid->colour[i]));
     }
 }
