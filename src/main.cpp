@@ -70,6 +70,18 @@ struct GUIState {
     CellColour selected_col;
 };
 
+void initGuiState(GUIState& gui_state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+    gui_state.neighbour_range = 16;
+    gui_state.repulsion_range = 2;
+    gui_state.selected_col = CellColour::Blue;
+
+    for (int x = 0; x < NUM_COLOURS; x++) {
+        for (int y = 0; y < NUM_COLOURS; y++) {
+            snprintf(gui_state.value_box_texts[x][y], 32, "%.0f", colour_attraction[x][y]);
+        }
+    }
+}
+
 void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
 
@@ -151,16 +163,8 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Vf2D cell_size = getCellSize();
 
     GUIState gui_state = GUIState{0};
-    gui_state.neighbour_range = 16;
-    gui_state.repulsion_range = 2;
+    initGuiState(gui_state, colour_attraction);
     bool menu_mode = false;
-    gui_state.selected_col = CellColour::Blue;
-
-    for (int x = 0; x < NUM_COLOURS; x++) {
-        for (int y = 0; y < NUM_COLOURS; y++) {
-            snprintf(gui_state.value_box_texts[x][y], 32, "%.0f", colour_attraction[x][y]);
-        }
-    }
 
 	// game loop
 	while (!WindowShouldClose())
@@ -229,6 +233,10 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Grid* current_grid = &grid_a;
     Grid* next_grid = &grid_b;
 
+    GUIState gui_state = GUIState{0};
+    initGuiState(gui_state, colour_attraction);
+    bool menu_mode = false;
+
 	// game loop
 	while (!WindowShouldClose())
 	{
@@ -238,6 +246,9 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
         draw(current_grid);
         if (grid_lines) drawGridLines();
 
+        if (menu_mode) guiPanel(gui_state, colour_attraction);
+        DrawFPS(0, 0);
+
 		EndDrawing();
 
         //Update
@@ -245,29 +256,30 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             grid_lines = !grid_lines;
         }
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (current_grid->colour[mouseToGrid()] == CellColour::Blue)
+        if (!menu_mode || GetMouseX() > 220) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                current_grid->colour[mouseToGrid()] = gui_state.selected_col;
+            } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 current_grid->colour[mouseToGrid()] = CellColour::Blank;
-            else
-                current_grid->colour[mouseToGrid()] = CellColour::Blue;
-        } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            if (current_grid->colour[mouseToGrid()] == CellColour::Red)
-                current_grid->colour[mouseToGrid()] = CellColour::Blank;
-            else
-                current_grid->colour[mouseToGrid()] = CellColour::Red;
+            }
         }
 
-        if (IsKeyPressed(KEY_ENTER)) *current_grid = {};
+        if (gui_state.clear) {
+            *current_grid = {};
+            gui_state.clear = false;
+        }
 
-        //if (IsKeyPressed(KEY_SPACE)) {
+        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+
+        if (!gui_state.pause) {
             update(current_grid, next_grid, colour_attraction, GetFrameTime());
             std::swap(current_grid, next_grid);
             *next_grid = {};
-        //}
+        }
 
-        //WaitTime(1.0);
-        
         if (IsKeyPressed(KEY_ESCAPE)) {
+            menu_mode = false;
+            // TODO: Do the return next turn after a draw to remove the menu
             return;
         }
 	}

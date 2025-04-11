@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 int gridIndex(Vi2D pos) {
     // No bounds checking becuase yolo
@@ -58,12 +59,12 @@ void update(
         for (int x = pos.x - neighbour_range; x <= pos.x + neighbour_range; x++) {
             for (int y = pos.y - neighbour_range; y <= pos.y + neighbour_range; y++) {
                 Vi2D neighbour_pos = Vi2D{x, y};
+                if (!inBounds(neighbour_pos))
+                    neighbour_pos = gridMod(neighbour_pos);
                 int neighbour_index = gridIndex(neighbour_pos);
-
-                if (!inBounds(neighbour_pos)) continue;
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
-                if (pos.distance(neighbour_pos) > neighbour_range) continue;
+                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
 
                 force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
             }
@@ -84,10 +85,11 @@ void update(
             for (int y = -neighbour_range; y <= +neighbour_range; y++) {
                 Vi2D neighbour_pos = {x + pos.x, y + pos.y};
 
-                if (!inBounds(neighbour_pos)) continue;
-                if (pos.distance(neighbour_pos) > neighbour_range) continue;
+                if (!inBounds(neighbour_pos))
+                    neighbour_pos = gridMod(neighbour_pos);
+                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
 
-                int neighbour_index = gridIndex({x + pos.x, y + pos.y});
+                int neighbour_index = gridIndex({neighbour_pos.x, neighbour_pos.y});
                 CellColour neighbour_colour = original->colour[neighbour_index];
                 if (neighbour_colour == CellColour::Blank) continue;
                 Vi2D direction = target->direction[neighbour_index];
@@ -110,6 +112,10 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 {
     //get coefficient between colours (b acting on a)
     float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][(original->colour[gridIndex(cell_pos_b)]) - 1];
+
+    Vi2D shadow_neighbour = getShadowCell(cell_pos_a, cell_pos_b);
+    if(cell_pos_a.distance(shadow_neighbour) < cell_pos_a.distance(cell_pos_b))
+        cell_pos_b = shadow_neighbour;
 
     //calculate distance between cells
     float distance = cell_pos_a.distance(cell_pos_b);
@@ -136,4 +142,65 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 
     //return x and y component of force
     return Vf2D{magnitude * (float(cell_pos_b.x-cell_pos_a.x)/distance), magnitude * (float(cell_pos_b.y-cell_pos_a.y)/distance)};
+}
+
+//function to get a "shadow" version of b off of the screen that repsresents a cell equivilent to wrapping from b across the screen to a
+Vi2D getShadowCell(Vi2D a, Vi2D b)
+{
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vi2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vi2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vi2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vi2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+
+    //find closest point to a
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
+
+    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist});
+
+    if(min_distance == left_dist)
+        return b_left;
+    else if(min_distance == right_dist)
+        return b_right;
+    else if(min_distance == top_dist)
+        return b_top;
+    else
+        return b_bottom;
+
+}
+
+//get shortest distance between cells considering wrapping around screen
+float getShortestDistance(Vi2D a, Vi2D b)
+{
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vi2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vi2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vi2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vi2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+
+    //find closest point to a
+    float dist = a.distance(b);
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
+
+    return std::min({dist, left_dist, right_dist, top_dist, bottom_dist});
+}
+
+//custom mod to handle negatives
+int mod(int a, int b)
+{
+    int mod = a % b;
+    if (mod < 0)
+        mod += b;
+    return mod;
+}
+
+Vi2D gridMod(Vi2D a)
+{
+    return Vi2D{mod(a.x,GRID_WIDTH),mod(a.y,GRID_HEIGHT)};
 }
