@@ -33,25 +33,25 @@ void update(
         //update position of particle in next gen with force
         Vf2D new_pos = original->particles.at(i).position + (force * dt);
 
-        // //mod position to ensure in bounds and wrap around if not
-        // new_pos.x = mod(new_pos.x, GetScreenWidth());
-        // new_pos.y = mod(new_pos.y, GetScreenHeight());
-        // target->particles.at(i).position = new_pos;
-
         //if position is out of bounds, wrap round
         if(!particleInBounds(new_pos))
         {
             // std::cout << "wrapped" << std::endl;
             // std::cout << "force" << force.x << "," << force.y << std::endl;
             // std::cout << "pos" << original->particles.at(i).position.x << "," << original->particles.at(i).position.y << std::endl;
-            target->particles.at(i).position = getWrappedPoint(original->particles.at(i).position, new_pos, force);
+            // std::cout << "newpos" << new_pos.x << "," << new_pos.y << std::endl;
+            // std::cout << "wrappos" << getWrappedPoint(original->particles.at(i).position, new_pos, force).str() << std::endl;
+            // do
+            // {
+            //     new_pos = getWrappedPoint(original->particles.at(i).position, new_pos, force);
+            // } while (!particleInBounds(new_pos));
+            // target->particles.at(i).position = getWrappedPoint(original->particles.at(i).position, new_pos, force);
             // std::cout << "newpos" << target->particles.at(i).position.x << "," << target->particles.at(i).position.y << std::endl;
+            target->particles.at(i).position = getWrappedPoint(original->particles.at(i).position, new_pos, force);
         }
         else
             target->particles.at(i).position = new_pos;
     }
-    // for (int i_erase : to_erase)
-    //     target->particles.erase(target->particles.begin() + i_erase);
 }
 
 Vf2D getForceBetweenParticles(
@@ -106,7 +106,7 @@ Vf2D getForceBetweenParticles(
 
 bool particleInBounds(Vf2D pos)
 {
-    return (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT);
+    return (pos.x >= 0 && pos.x <= GRID_WIDTH && pos.y >= 0 && pos.y <= GRID_HEIGHT);
 }
 
 void printParticles(const Particles* particles)
