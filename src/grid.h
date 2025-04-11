@@ -5,12 +5,19 @@
 
 #define GRID_WIDTH 100
 #define GRID_HEIGHT 100
-#define NUM_COLOURS 2
+#define NUM_COLOURS 8
 
 enum CellColour {
     Blank,
     Red,
     Blue,
+    Green,
+    Pink,
+    Yellow,
+    Brown,
+    Orange,
+    White,
+    COUNT,
 };
 
 struct Grid {
