@@ -26,6 +26,15 @@ Color getRaylibColour(CellColour col) {
         case Blank: return BLACK;
         case Red: return RED;
         case Blue: return BLUE;
+        case Green: return GREEN;
+        case Pink: return PINK;
+        case Yellow: return YELLOW;
+        case Brown: return BROWN;
+        case Orange: return ORANGE;
+        case White: return WHITE;
+        case COUNT: 
+            std::cerr << "COUNT has no colour" << std::endl;
+            exit(1);
     }
 
     return BLACK;

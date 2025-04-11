@@ -6,10 +6,8 @@
 void update(
     const Particles* original, Particles* target,
     const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
-    float dt
+    float dt, float neighbour_range, float repulsion_range
 ) {
-    const float neighbour_range = 16;
-    const float repulsion_range = 2;
 
     std::vector<int> to_erase = {}; 
 

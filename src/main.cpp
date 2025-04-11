@@ -1,11 +1,16 @@
+#include <_stdio.h>
+#define RAYGUI_IMPLEMENTATION
 #include "raylib.h"
 #include "grid.h"
 #include "particle.h"
 #include "vector2d.h"
+#include "raygui.h"
 #include <algorithm>
 #include <utility>
 #include <iostream>
 #include <cmath>
+#include <stdio.h>
+
 
 #define PARTICLE
 
@@ -50,6 +55,90 @@ int mouseToGrid() {
     return gridIndex({mouse_x, mouse_y});
 }
 
+struct GUIState {
+    bool repulsion_editmode;
+    int repulsion_range;
+    bool neighbour_editmode;
+    int neighbour_range;
+
+    char value_box_texts[NUM_COLOURS][NUM_COLOURS][32];
+    bool value_box_edits[NUM_COLOURS][NUM_COLOURS];
+
+    bool clear;
+    bool pause;
+
+    CellColour selected_col;
+};
+
+void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    // Repulsion settings
+    GuiLabel({10, 10, 160, 30}, "Repulsion Range:");
+    if (GuiValueBox({10, 40, 160, 30}, "", &state.repulsion_range, 0, 50, state.repulsion_editmode)) {
+        state.repulsion_editmode = !state.repulsion_editmode;
+    }
+
+    // Neighbour range settings
+    GuiLabel({10, 90, 160, 30}, "Neigbour Range:");
+    if (GuiValueBox({10, 120, 160, 30}, "", &state.neighbour_range, 0, 100, state.neighbour_editmode)) {
+        state.neighbour_editmode = !state.neighbour_editmode;
+    }
+
+    // Attraction settings
+    GuiLabel({10, 170, 160, 30}, "Attraction");
+    int x_pos = 30;
+    for(int i = CellColour::Red; i < CellColour::COUNT; i++) {
+        CellColour col = static_cast<CellColour>(i);
+        DrawRectangleV({float(x_pos), 203}, {16, 16}, getRaylibColour(col));
+        x_pos += 24;
+    }
+
+    int y_pos = 226;
+    for(int i = CellColour::Red; i < CellColour::COUNT; i++) {
+        CellColour col = static_cast<CellColour>(i);
+        DrawRectangleV({6, float(y_pos)}, {16, 16}, getRaylibColour(col));
+        y_pos += 24;
+    }
+
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 15);
+    for(int x = 0; x < CellColour::COUNT - 1; x++) {
+        for(int y = 0; y < CellColour::COUNT - 1; y++) {
+            Rectangle rect = {float(26+(24*x)), float(222+(24*y)), 24.0, 24.0};
+            if (GuiValueBoxFloat(rect, "", state.value_box_texts[x][y], &colour_attraction[x][y], state.value_box_edits[x][y])) {
+                state.value_box_edits[x][y] = !state.value_box_edits[x][y];
+            }
+        }
+    }
+
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+    // Simulation Controls
+    if (GuiButton({10, 440, 160, 30}, "Clear")) {
+        state.clear = true;
+    }
+    if (GuiButton({10, 480, 160, 30}, state.pause ? "Unpause" : "Pause")) {
+        state.pause = !state.pause;
+    }
+
+    // Colour palette
+    GuiLabel({10, 570, 160, 30}, "Selected:");
+    DrawRectangleRec({100, 570, 24, 24}, getRaylibColour(state.selected_col));
+    for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < 2; y++) {
+            CellColour col = static_cast<CellColour>(y*4+x + 1);
+
+            Rectangle rect = {float(10 + x * 24), float(604 + y * 24), 24, 24};
+
+            // Little hack, hide a button behind the rectangle, a bit sneaky
+            if (GuiButton(rect, "")) {
+                state.selected_col = col;
+            }
+
+            DrawRectangleRec(rect, getRaylibColour(col));
+        }
+    }
+}
+
 void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     bool grid_lines = false;
 
@@ -61,6 +150,18 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
     Vf2D cell_size = getCellSize();
 
+    GUIState gui_state = GUIState{0};
+    gui_state.neighbour_range = 16;
+    gui_state.repulsion_range = 2;
+    bool menu_mode = false;
+    gui_state.selected_col = CellColour::Blue;
+
+    for (int x = 0; x < NUM_COLOURS; x++) {
+        for (int y = 0; y < NUM_COLOURS; y++) {
+            snprintf(gui_state.value_box_texts[x][y], 32, "%.0f", colour_attraction[x][y]);
+        }
+    }
+
 	// game loop
 	while (!WindowShouldClose())
 	{
@@ -70,6 +171,8 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
         draw(current_particles);
         if (grid_lines) drawGridLines();
 
+        if (menu_mode) guiPanel(gui_state, colour_attraction);
+
 		EndDrawing();
 
         //Update
@@ -78,35 +181,40 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
         }
 
         //create particles on click
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            Particle blue_p;
-            blue_p.colour = CellColour::Blue;
-            Vector2 pos = GetMousePosition();
-            blue_p.position = Vf2D{pos.x, pos.y} / cell_size;
-            current_particles->particles.push_back(blue_p);
-            next_particles->particles.push_back(blue_p);
-        } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            Particle red_p;
-            red_p.colour = CellColour::Red;
-            Vector2 pos = GetMousePosition();
-            red_p.position = Vf2D{pos.x, pos.y} / cell_size;
-            current_particles->particles.push_back(red_p);
-            next_particles->particles.push_back(red_p);
+        if (!menu_mode || GetMouseX() > 220) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                Particle part;
+                part.colour = gui_state.selected_col;
+                Vector2 pos = GetMousePosition();
+                part.position = Vf2D{pos.x, pos.y} / cell_size;
+                current_particles->particles.push_back(part);
+                next_particles->particles.push_back(part);
+            }
         }
 
-        if (IsKeyPressed(KEY_ENTER))
+        if (gui_state.clear)
         {
             *current_particles = {};
             *next_particles = {};
+            gui_state.clear = false;
         } 
 
-        //if (IsKeyPressed(KEY_SPACE)) {
-        update(current_particles, next_particles, colour_attraction, GetFrameTime());
-        current_particles->particles = next_particles->particles;
-        //}
+        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+
+        if (!gui_state.pause) {
+            update(
+                current_particles, next_particles,
+                colour_attraction,
+                GetFrameTime(),
+                gui_state.neighbour_range, gui_state.repulsion_range
+            );
+            current_particles->particles = next_particles->particles;
+        }
 
         
         if (IsKeyPressed(KEY_ESCAPE)) {
+            menu_mode = false;
+            // TODO: Do the return next turn after a draw to remove the menu
             return;
         }
 	}
@@ -176,10 +284,11 @@ int main ()
 
     //Coefficients of attraction of each pair of colours (default 0)
     float colour_attraction[NUM_COLOURS][NUM_COLOURS] = {};
-    colour_attraction[CellColour::Blue-1][CellColour::Blue-1] =  10;
-    colour_attraction[CellColour::Red-1][CellColour::Red-1]   =  10;
-    colour_attraction[CellColour::Red-1][CellColour::Blue-1]  =  10;
-    colour_attraction[CellColour::Blue-1][CellColour::Red-1]  = -10;
+    for (int x = 0; x < NUM_COLOURS; x++) {
+        for (int y = 0; y < NUM_COLOURS; y++) {
+            colour_attraction[x][y] = (x == y);
+        }
+    }
 
     // Ask the user which game they want to start particle or cellular
     while (!WindowShouldClose()) {
