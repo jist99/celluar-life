@@ -50,10 +50,9 @@ void update(
         for (int x = pos.x - neighbour_range; x <= pos.x + neighbour_range; x++) {
             for (int y = pos.y - neighbour_range; y <= pos.y + neighbour_range; y++) {
                 Vi2D neighbour_pos = Vi2D{x, y};
-                int neighbour_index = gridIndex(neighbour_pos);
-
                 if (!inBounds(neighbour_pos))
-                    neighbour_pos = {x%GRID_WIDTH, y%GRID_HEIGHT};
+                    neighbour_pos = gridMod(neighbour_pos);
+                int neighbour_index = gridIndex(neighbour_pos);
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
                 if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
@@ -62,7 +61,7 @@ void update(
             }
         }
 
-        // force *= 0.1;
+        force *= dt;
         target->direction[i] = Vf2D{round_away(force.x), round_away(force.y)};
     }
 
@@ -78,7 +77,7 @@ void update(
                 Vi2D neighbour_pos = {x + pos.x, y + pos.y};
 
                 if (!inBounds(neighbour_pos))
-                    neighbour_pos = {neighbour_pos.x%GRID_WIDTH, neighbour_pos.y%GRID_HEIGHT};
+                    neighbour_pos = gridMod(neighbour_pos);
                 if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
 
                 int neighbour_index = gridIndex({neighbour_pos.x, neighbour_pos.y});
@@ -181,4 +180,18 @@ float getShortestDistance(Vi2D a, Vi2D b)
     float bottom_dist = a.distance(b_bottom);
 
     return std::min({dist, left_dist, right_dist, top_dist, bottom_dist});
+}
+
+//custom mod to handle negatives
+int mod(int a, int b)
+{
+    int mod = a % b;
+    if (mod < 0)
+        mod += b;
+    return mod;
+}
+
+Vi2D gridMod(Vi2D a)
+{
+    return Vi2D{mod(a.x,GRID_WIDTH),mod(a.y,GRID_HEIGHT)};
 }
