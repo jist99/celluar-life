@@ -52,21 +52,17 @@ void update(
                 Vi2D neighbour_pos = Vi2D{x, y};
                 int neighbour_index = gridIndex(neighbour_pos);
 
-                if (!inBounds(neighbour_pos)) continue;
+                if (!inBounds(neighbour_pos))
+                    neighbour_pos = {x%GRID_WIDTH, y%GRID_HEIGHT};
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
-
-                Vf2D shadow_neighbour = getShadowCell(pos, neighbour_pos);
-                if(pos.distance(shadow_neighbour) < pos.distance(neighbour_pos))
-                    neighbour_pos = shadow_neighbour;
-
-                if (pos.distance(neighbour_pos) > neighbour_range) continue;
+                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
 
                 force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
             }
         }
 
-        // force *= dt;
+        // force *= 0.1;
         target->direction[i] = Vf2D{round_away(force.x), round_away(force.y)};
     }
 
@@ -81,10 +77,11 @@ void update(
             for (int y = -neighbour_range; y <= +neighbour_range; y++) {
                 Vi2D neighbour_pos = {x + pos.x, y + pos.y};
 
-                if (!inBounds(neighbour_pos)) continue;
-                if (pos.distance(neighbour_pos) > neighbour_range) continue;
+                if (!inBounds(neighbour_pos))
+                    neighbour_pos = {neighbour_pos.x%GRID_WIDTH, neighbour_pos.y%GRID_HEIGHT};
+                if (getShortestDistance(pos,neighbour_pos) > neighbour_range) continue;
 
-                int neighbour_index = gridIndex({x + pos.x, y + pos.y});
+                int neighbour_index = gridIndex({neighbour_pos.x, neighbour_pos.y});
                 CellColour neighbour_colour = original->colour[neighbour_index];
                 if (neighbour_colour == CellColour::Blank) continue;
                 Vi2D direction = target->direction[neighbour_index];
@@ -107,6 +104,10 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 {
     //get coefficient between colours (b acting on a)
     float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][(original->colour[gridIndex(cell_pos_b)]) - 1];
+
+    Vi2D shadow_neighbour = getShadowCell(cell_pos_a, cell_pos_b);
+    if(cell_pos_a.distance(shadow_neighbour) < cell_pos_a.distance(cell_pos_b))
+        cell_pos_b = shadow_neighbour;
 
     //calculate distance between cells
     float distance = cell_pos_a.distance(cell_pos_b);
@@ -136,16 +137,13 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 }
 
 //function to get a "shadow" version of b off of the screen that repsresents a cell equivilent to wrapping from b across the screen to a
-Vf2D getShadowCell(Vf2D a, Vf2D b)
+Vi2D getShadowCell(Vi2D a, Vi2D b)
 {
-    float width = GRID_WIDTH;
-    float height = GRID_HEIGHT;
-
     //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
-    Vf2D b_left = {b.x-GRID_WIDTH, b.y};
-    Vf2D b_right = {b.x+GRID_WIDTH, b.y};
-    Vf2D b_top = {b.x, b.y-GRID_HEIGHT};
-    Vf2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+    Vi2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vi2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vi2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vi2D b_bottom = {b.x, b.y+GRID_HEIGHT};
 
     //find closest point to a
     float left_dist = a.distance(b_left);
@@ -164,4 +162,23 @@ Vf2D getShadowCell(Vf2D a, Vf2D b)
     else
         return b_bottom;
 
+}
+
+//get shortest distance between cells considering wrapping around screen
+float getShortestDistance(Vi2D a, Vi2D b)
+{
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vi2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vi2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vi2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vi2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+
+    //find closest point to a
+    float dist = a.distance(b);
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
+
+    return std::min({dist, left_dist, right_dist, top_dist, bottom_dist});
 }

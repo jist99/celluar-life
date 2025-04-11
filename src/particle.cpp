@@ -116,9 +116,6 @@ float mod(float a, float b)
 //function to get a "shadow" version of b off of the screen that repsresents a point equivilent to wrapping from b across the screen to a
 Vf2D getShadowPoint(Vf2D a, Vf2D b)
 {
-    float width = GRID_WIDTH;
-    float height = GRID_HEIGHT;
-
     //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
     Vf2D b_left = {b.x-GRID_WIDTH, b.y};
     Vf2D b_right = {b.x+GRID_WIDTH, b.y};
