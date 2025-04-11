@@ -62,13 +62,14 @@ void update(
                 if (!inBounds(neighbour_pos))
                     neighbour_pos = gridMod(neighbour_pos);
                 int neighbour_index = gridIndex(neighbour_pos);
-                if (original->colour[neighbour_index] == CellColour::Blank) continue;
+                CellColour neighbour_colour = original->colour[neighbour_index];
+                if (neighbour_colour == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
                 Vi2D shadow_pos = getShadowCell(pos, neighbour_pos);
                 if(pos.distance(shadow_pos) < pos.distance(neighbour_pos))
                     neighbour_pos = shadow_pos;
                 if (pos.distance(neighbour_pos) > neighbour_range) continue;
-                force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
+                force += getForceBetweenCells(pos, neighbour_pos, neighbour_colour, colour_attraction, original, repulsion_range, neighbour_range);
             }
         }
 
@@ -109,10 +110,10 @@ void update(
 
 //Calculate force of cell b on cell a
 //Based on particle life: Standard linear repulsion up to repulsion_distance, then linear increase (to coeff) halfway to max_distance, then linear decrease (to 0) up to max_distance
-Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], const Grid* original, float repulsion_distance, float max_distance)
+Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, CellColour b_colour, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], const Grid* original, float repulsion_distance, float max_distance)
 {
     //get coefficient between colours (b acting on a)
-    float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][(original->colour[gridIndex(cell_pos_b)]) - 1];
+    float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][b_colour - 1];
 
     //calculate distance between cells
     float distance = cell_pos_a.distance(cell_pos_b);
