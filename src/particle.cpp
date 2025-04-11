@@ -132,95 +132,120 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
     float width = GRID_WIDTH;
     float height = GRID_HEIGHT;
 
-    //if vertical
-    if (b.x == a.x)
-    {
-        if(height < 2*b.y)
-            return Vf2D{b.x, b.y-height};
-        else
-            return Vf2D{b.x, b.y+height};
-    }
-    //if horizontal
-    if (b.y == a.y)
-    {
-        if(width < 2*b.x)
-            return Vf2D{b.x-width, b.y};
-        else
-            return Vf2D{b.x+width, b.y};
-    }
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vf2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vf2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vf2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vf2D b_bottom = {b.x, b.y+GRID_HEIGHT};
 
-    float grad = (b.y - a.y)/(b.x - a.x);
-    float intercept = a.y-(grad*a.x);
+    //find closest point to a
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
 
-    float right_dist_b = width - b.x;
-    float bottom_dist_b = height - b.y;
+    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist});
 
-    float right_dist_a = width - a.x;
-    float bottom_dist_a = height - a.y;
-
-    //intersect points with closest edge
-    Vf2D b_intersect = {};
-    Vf2D a_intersect = {};
-
-    //get intersect of b and its closest edge (TODO: div zero checking)
-    if(b.x <= b.y && b.x <= right_dist_b && b.x <= bottom_dist_b)
-    {
-        //intersect with x = 0
-        b_intersect.y = intercept;
-    }
-    else if (b.y <= b.x && b.y <= right_dist_b && b.y <= bottom_dist_b)
-    {
-        //intersect with y = 0
-        b_intersect.x = -intercept/grad;
-    }
-    else if (right_dist_b <= b.x && right_dist_b <= b.y && right_dist_b <= bottom_dist_b)
-    {
-        //intersect with x = width
-        b_intersect.x = width;
-        b_intersect.y = grad*width + intercept;
-    }
-    else if (bottom_dist_b <= b.x && bottom_dist_b <= b.y && bottom_dist_b <= right_dist_b)
-    {
-        //intersect with y = height
-        b_intersect.y = height;
-        b_intersect.x = (height - intercept)/grad;
-    }
+    if(min_distance == left_dist)
+        return b_left;
+    else if(min_distance == right_dist)
+        return b_right;
+    else if(min_distance == top_dist)
+        return b_top;
     else
-    {
-        //shouldn't happen - abort and return original
-        return b;
-    }
+        return b_bottom;
 
-    //get intersect of a and its closest edge (TODO: div zero checking)
-    if(a.x <= a.y && a.x <= right_dist_a && a.x <= bottom_dist_a)
-    {
-        //intersect with x = 0
-        a_intersect.y = intercept;
-    }
-    else if (a.y <= a.x && a.y <= right_dist_a && a.y <= bottom_dist_a)
-    {
-        //intersect with y = 0
-        a_intersect.x = -intercept/grad;
-    }
-    else if (right_dist_a <= a.x && right_dist_a <= a.y && right_dist_a <= bottom_dist_a)
-    {
-        //intersect with x = width
-        a_intersect.x = width;
-        a_intersect.y = grad*width + intercept;
-    }
-    else if (bottom_dist_a <= a.x && bottom_dist_a <= a.y && bottom_dist_a <= right_dist_a)
-    {
-        //intersect with y = height
-        a_intersect.y = height;
-        a_intersect.x = (height - intercept)/grad;
-    }
-    else
-    {
-        //shouldn't happen - abort and return original
-        return b;
-    }
 
-    return a_intersect + (b - b_intersect);
+    //OLD METHOD USING ALTERNATE WRAPPING SCHEME
+    // //if vertical
+    // if (b.x == a.x)
+    // {
+    //     if(height < 2*b.y)
+    //         return Vf2D{b.x, b.y-height};
+    //     else
+    //         return Vf2D{b.x, b.y+height};
+    // }
+    // //if horizontal
+    // if (b.y == a.y)
+    // {
+    //     if(width < 2*b.x)
+    //         return Vf2D{b.x-width, b.y};
+    //     else
+    //         return Vf2D{b.x+width, b.y};
+    // }
+
+    // float grad = (b.y - a.y)/(b.x - a.x);
+    // float intercept = a.y-(grad*a.x);
+
+    // float right_dist_b = width - b.x;
+    // float bottom_dist_b = height - b.y;
+
+    // float right_dist_a = width - a.x;
+    // float bottom_dist_a = height - a.y;
+
+    // //intersect points with closest edge
+    // Vf2D b_intersect = {};
+    // Vf2D a_intersect = {};
+
+    // //get intersect of b and its closest edge (TODO: div zero checking)
+    // if(b.x <= b.y && b.x <= right_dist_b && b.x <= bottom_dist_b)
+    // {
+    //     //intersect with x = 0
+    //     b_intersect.y = intercept;
+    // }
+    // else if (b.y <= b.x && b.y <= right_dist_b && b.y <= bottom_dist_b)
+    // {
+    //     //intersect with y = 0
+    //     b_intersect.x = -intercept/grad;
+    // }
+    // else if (right_dist_b <= b.x && right_dist_b <= b.y && right_dist_b <= bottom_dist_b)
+    // {
+    //     //intersect with x = width
+    //     b_intersect.x = width;
+    //     b_intersect.y = grad*width + intercept;
+    // }
+    // else if (bottom_dist_b <= b.x && bottom_dist_b <= b.y && bottom_dist_b <= right_dist_b)
+    // {
+    //     //intersect with y = height
+    //     b_intersect.y = height;
+    //     b_intersect.x = (height - intercept)/grad;
+    // }
+    // else
+    // {
+    //     //shouldn't happen - abort and return original
+    //     return b;
+    // }
+
+    // //get intersect of a and its closest edge (TODO: div zero checking)
+    // if(a.x <= a.y && a.x <= right_dist_a && a.x <= bottom_dist_a)
+    // {
+    //     //intersect with x = 0
+    //     a_intersect.y = intercept;
+    // }
+    // else if (a.y <= a.x && a.y <= right_dist_a && a.y <= bottom_dist_a)
+    // {
+    //     //intersect with y = 0
+    //     a_intersect.x = -intercept/grad;
+    // }
+    // else if (right_dist_a <= a.x && right_dist_a <= a.y && right_dist_a <= bottom_dist_a)
+    // {
+    //     //intersect with x = width
+    //     a_intersect.x = width;
+    //     a_intersect.y = grad*width + intercept;
+    // }
+    // else if (bottom_dist_a <= a.x && bottom_dist_a <= a.y && bottom_dist_a <= right_dist_a)
+    // {
+    //     //intersect with y = height
+    //     a_intersect.y = height;
+    //     a_intersect.x = (height - intercept)/grad;
+    // }
+    // else
+    // {
+    //     //shouldn't happen - abort and return original
+    //     return b;
+    // }
+
+    // return a_intersect + (b - b_intersect);
 }
 
 //given that a point a has been moved to a point b off screen, calculate where it should wrap to
@@ -229,59 +254,64 @@ Vf2D getWrappedPoint(Vf2D a, Vf2D b, Vf2D force)
     float width = GRID_WIDTH;
     float height = GRID_HEIGHT;
 
-    //if vertical
-    if (b.x == a.x)
-    {
-        return Vf2D{b.x, mod(b.y, height)};
-    }
-    //if horizontal
-    if (b.y == a.y)
-    {
-        return Vf2D{mod(b.x, width), b.y};
-    }
+    return Vf2D{mod(b.x, width),mod(b.y, height)};
 
-    float grad = (b.y - a.y)/(b.x - a.x);
-    float intercept = a.y-(grad*a.x);
+    //apply remaining force to new point
 
-    //points where the particle exits and enters the screen
-    Vf2D intersect = {};
-    Vf2D exit_point = {};
-    Vf2D entry_point = {};
+    //OLD METHOD USING ALTERNATE WRAPPING SCHEME
+    // //if vertical
+    // if (b.x == a.x)
+    // {
+    //     return Vf2D{b.x, mod(b.y, height)};
+    // }
+    // //if horizontal
+    // if (b.y == a.y)
+    // {
+    //     return Vf2D{mod(b.x, width), b.y};
+    // }
 
-    //calculate intersection points with all four edges, keeping the two that are within our boundries
+    // float grad = (b.y - a.y)/(b.x - a.x);
+    // float intercept = a.y-(grad*a.x);
 
-    //intersect with x = width
-    intersect = {width,grad*width + intercept};
-    if(particleInBounds(intersect)) {
-        if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
-            exit_point = intersect;
-        else
-            entry_point = intersect;
-    }
-    //intersect with x = 0
-    intersect = {0, intercept};
-    if(particleInBounds(intersect)) {
-        if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
-            exit_point = intersect;
-        else
-            entry_point = intersect;
-    }
-    //intersect with y = height
-    intersect = {(height - intercept)/grad,height};
-    if(particleInBounds(intersect)) {
-        if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
-            exit_point = intersect;
-        else
-            entry_point = intersect;
-    }
-    //intersect with y = 0
-    intersect = {-intercept/grad, 0};
-    if(particleInBounds(intersect)) {
-        if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
-            exit_point = intersect;
-        else
-            entry_point = intersect;
-    }
+    // //points where the particle exits and enters the screen
+    // Vf2D intersect = {};
+    // Vf2D exit_point = {};
+    // Vf2D entry_point = {};
 
-    return entry_point + (b-exit_point);
+    // //calculate intersection points with all four edges, keeping the two that are within our boundries
+
+    // //intersect with x = width
+    // intersect = {width,grad*width + intercept};
+    // if(particleInBounds(intersect)) {
+    //     if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
+    //         exit_point = intersect;
+    //     else
+    //         entry_point = intersect;
+    // }
+    // //intersect with x = 0
+    // intersect = {0, intercept};
+    // if(particleInBounds(intersect)) {
+    //     if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
+    //         exit_point = intersect;
+    //     else
+    //         entry_point = intersect;
+    // }
+    // //intersect with y = height
+    // intersect = {(height - intercept)/grad,height};
+    // if(particleInBounds(intersect)) {
+    //     if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
+    //         exit_point = intersect;
+    //     else
+    //         entry_point = intersect;
+    // }
+    // //intersect with y = 0
+    // intersect = {-intercept/grad, 0};
+    // if(particleInBounds(intersect)) {
+    //     if(intersect.x <= std::max(a.x, b.x) && intersect.x >= std::min(a.x, b.x) && intersect.y <= std::max(a.y, b.y) && intersect.y >= std::min(a.y, b.y))
+    //         exit_point = intersect;
+    //     else
+    //         entry_point = intersect;
+    // }
+
+    // return entry_point + (b-exit_point);
 }
