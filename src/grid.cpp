@@ -31,7 +31,12 @@ Color getRaylibColour(CellColour col) {
     return BLACK;
 }
 
-void update(const Grid* original, Grid* target, const float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+void update(
+    const Grid* original,
+    Grid* target,
+    const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    float dt
+) {
     const int neighbour_range = 16;
     const int repulsion_range = 2;
 
@@ -55,16 +60,7 @@ void update(const Grid* original, Grid* target, const float colour_attraction[NU
             }
         }
 
-        //force = force.norm();
-        std::cout << force.str() << std::endl;
-
-        //Vi2D direction = {0,0};
-        //if (force.x <= -0.1) direction.x = -1;
-        //else if (force.x >= 0.1) direction.x = 1;
-        //if (force.y <= -0.1) direction.y = -1;
-        //else if (force.y >= 0.1) direction.y = 1;
-
-        //target->direction[i] = direction;
+        force *= dt;
         target->direction[i] = Vf2D{round_away(force.x), round_away(force.y)};
     }
 
