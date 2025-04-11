@@ -238,6 +238,8 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     initGuiState(gui_state, colour_attraction);
     bool menu_mode = false;
 
+    float dt_acc = 0;
+
 	// game loop
 	while (!WindowShouldClose())
 	{
@@ -273,9 +275,14 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
         if (!gui_state.pause) {
-            update(current_grid, next_grid, colour_attraction, GetFrameTime());
-            std::swap(current_grid, next_grid);
-            *next_grid = {};
+            if(dt_acc >= UPDATE_THRESHOLD)
+            {
+                dt_acc -= UPDATE_THRESHOLD;
+                update(current_grid, next_grid, colour_attraction, GetFrameTime());
+                std::swap(current_grid, next_grid);
+                *next_grid = {};
+            }
+            dt_acc += GetFrameTime();
         }
 
         if (IsKeyPressed(KEY_ESCAPE)) {

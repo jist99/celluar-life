@@ -6,6 +6,7 @@
 #define GRID_WIDTH 100
 #define GRID_HEIGHT 100
 #define NUM_COLOURS 8
+#define UPDATE_THRESHOLD 0.1
 
 enum CellColour {
     Blank,
