@@ -2,6 +2,7 @@
 #include "grid.h" // This is just to get GRID_WIDTH and HEIGHT, maybe move it?
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 void update(
     const Particles* original, Particles* target,
@@ -10,8 +11,6 @@ void update(
 ) {
     const float neighbour_range = 16;
     const float repulsion_range = 2;
-
-    std::vector<int> to_erase = {}; 
 
     //get force acting on each particle
     for (int i = 0; i < original->particles.size(); i++)
@@ -32,16 +31,14 @@ void update(
         //update position of particle in next gen with force
         Vf2D new_pos = original->particles.at(i).position + (force * dt);
 
-        //if position is out of bounds, remove it (TODO: is this what we want?)
+        //if position is out of bounds, wrap round
         if(!particleInBounds(new_pos))
         {
-            to_erase.push_back(i);
+            target->particles.at(i).position = {mod(new_pos.x, GRID_WIDTH),mod(new_pos.y, GRID_HEIGHT)};
         }
         else
             target->particles.at(i).position = new_pos;
     }
-    for (int i_erase : to_erase)
-        target->particles.erase(target->particles.begin() + i_erase);
 }
 
 Vf2D getForceBetweenParticles(
@@ -55,6 +52,21 @@ Vf2D getForceBetweenParticles(
 
     //calculate distance between cells
     float distance = particle_a.position.distance(particle_b.position);
+
+    //calculate a "b'" (shadow particle that represents position relative to a considering wrapping around the screen)
+
+    Vf2D b_prime = getShadowPoint(particle_a.position, particle_b.position);
+
+    float wrap_distance = particle_a.position.distance(b_prime);
+
+    Vf2D b_pos = particle_b.position;
+
+    //if the particles are closer when considering wrapping, consider that instead
+    if(wrap_distance < distance)
+    {
+        distance = wrap_distance;
+        b_pos = b_prime;
+    }
     
     float magnitude = 0;
 
@@ -76,12 +88,12 @@ Vf2D getForceBetweenParticles(
     }
 
     //return x and y component of force
-    return Vf2D{magnitude*(float(particle_b.position.x-particle_a.position.x)/distance), magnitude*(float(particle_b.position.y-particle_a.position.y)/distance)};
+    return Vf2D{magnitude*(float(b_pos.x-particle_a.position.x)/distance), magnitude*(float(b_pos.y-particle_a.position.y)/distance)};
 }
 
-bool particleInBounds(Vi2D pos)
+bool particleInBounds(Vf2D pos)
 {
-    return (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT);
+    return (pos.x >= 0 && pos.x <= GRID_WIDTH && pos.y >= 0 && pos.y <= GRID_HEIGHT);
 }
 
 void printParticles(const Particles* particles)
@@ -90,4 +102,41 @@ void printParticles(const Particles* particles)
     {
         std::cout << "x:" << p.position.x << " " << "y:" << p.position.y << " " << "colour:" << p.colour << std::endl;
     }
+}
+
+//custom mod function as fmod handles negatives strangely
+float mod(float a, float b)
+{
+    float mod = std::fmod(a,b);
+    if (mod < 0)
+        mod += b;
+    return mod;
+}
+
+//function to get a "shadow" version of b off of the screen that repsresents a point equivilent to wrapping from b across the screen to a
+Vf2D getShadowPoint(Vf2D a, Vf2D b)
+{
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vf2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vf2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vf2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vf2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+
+    //find closest point to a
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
+
+    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist});
+
+    if(min_distance == left_dist)
+        return b_left;
+    else if(min_distance == right_dist)
+        return b_right;
+    else if(min_distance == top_dist)
+        return b_top;
+    else
+        return b_bottom;
+
 }

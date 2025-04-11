@@ -151,11 +151,11 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_ENTER)) *current_grid = {};
 
-        //if (IsKeyPressed(KEY_SPACE)) {
+        // if (IsKeyPressed(KEY_SPACE)) {
             update(current_grid, next_grid, colour_attraction, GetFrameTime());
             std::swap(current_grid, next_grid);
             *next_grid = {};
-        //}
+        // }
 
         //WaitTime(1.0);
         
