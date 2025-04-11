@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 int gridIndex(Vi2D pos) {
     // No bounds checking becuase yolo
@@ -54,13 +55,18 @@ void update(
                 if (!inBounds(neighbour_pos)) continue;
                 if (original->colour[neighbour_index] == CellColour::Blank) continue;
                 if (pos == neighbour_pos) continue;
+
+                Vf2D shadow_neighbour = getShadowCell(pos, neighbour_pos);
+                if(pos.distance(shadow_neighbour) < pos.distance(neighbour_pos))
+                    neighbour_pos = shadow_neighbour;
+
                 if (pos.distance(neighbour_pos) > neighbour_range) continue;
 
                 force += getForceBetweenCells(pos, neighbour_pos, colour_attraction, original, repulsion_range, neighbour_range);
             }
         }
 
-        force *= dt;
+        // force *= dt;
         target->direction[i] = Vf2D{round_away(force.x), round_away(force.y)};
     }
 
@@ -127,4 +133,35 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
 
     //return x and y component of force
     return Vf2D{magnitude * (float(cell_pos_b.x-cell_pos_a.x)/distance), magnitude * (float(cell_pos_b.y-cell_pos_a.y)/distance)};
+}
+
+//function to get a "shadow" version of b off of the screen that repsresents a cell equivilent to wrapping from b across the screen to a
+Vf2D getShadowCell(Vf2D a, Vf2D b)
+{
+    float width = GRID_WIDTH;
+    float height = GRID_HEIGHT;
+
+    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    Vf2D b_left = {b.x-GRID_WIDTH, b.y};
+    Vf2D b_right = {b.x+GRID_WIDTH, b.y};
+    Vf2D b_top = {b.x, b.y-GRID_HEIGHT};
+    Vf2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+
+    //find closest point to a
+    float left_dist = a.distance(b_left);
+    float right_dist = a.distance(b_right);
+    float top_dist = a.distance(b_top);
+    float bottom_dist = a.distance(b_bottom);
+
+    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist});
+
+    if(min_distance == left_dist)
+        return b_left;
+    else if(min_distance == right_dist)
+        return b_right;
+    else if(min_distance == top_dist)
+        return b_top;
+    else
+        return b_bottom;
+
 }
