@@ -91,7 +91,7 @@ Vf2D getForceBetweenParticles(
 
 bool particleInBounds(Vf2D pos)
 {
-    return (pos.x >= 0 && pos.x <= GRID_WIDTH && pos.y >= 0 && pos.y <= GRID_HEIGHT);
+    return (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT);
 }
 
 void printParticles(const Particles* particles)
