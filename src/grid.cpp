@@ -1,5 +1,7 @@
 #include "raylib.h"
+#include "vector2d.h"
 #include "grid.h"
+#include "utils.h"
 #include <cmath>
 #include <iostream>
 
@@ -29,7 +31,12 @@ Color getRaylibColour(CellColour col) {
     return BLACK;
 }
 
-void update(const Grid* original, Grid* target, const float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+void update(
+    const Grid* original,
+    Grid* target,
+    const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    float dt
+) {
     const int neighbour_range = 16;
     const int repulsion_range = 2;
 
@@ -53,15 +60,8 @@ void update(const Grid* original, Grid* target, const float colour_attraction[NU
             }
         }
 
-        force = force.norm();
-
-        Vi2D direction = {0,0};
-        if (force.x <= -0.1) direction.x = -1;
-        else if (force.x >= 0.1) direction.x = 1;
-        if (force.y <= -0.1) direction.y = -1;
-        else if (force.y >= 0.1) direction.y = 1;
-
-        target->direction[i] = direction;
+        force *= dt;
+        target->direction[i] = Vf2D{round_away(force.x), round_away(force.y)};
     }
 
     // colour pass
@@ -71,9 +71,12 @@ void update(const Grid* original, Grid* target, const float colour_attraction[NU
         int blue_votes = 0;
         int red_votes = 0;
 
-        for (int x = -1; x <= +1; x++) {
-            for (int y = -1; y <= +1; y++) {
-                if (!inBounds({x + pos.x, y + pos.y})) continue;
+        for (int x = -neighbour_range; x <= +neighbour_range; x++) {
+            for (int y = -neighbour_range; y <= +neighbour_range; y++) {
+                Vi2D neighbour_pos = {x + pos.x, y + pos.y};
+
+                if (!inBounds(neighbour_pos)) continue;
+                if (pos.distance(neighbour_pos) > neighbour_range) continue;
 
                 int neighbour_index = gridIndex({x + pos.x, y + pos.y});
                 CellColour neighbour_colour = original->colour[neighbour_index];
@@ -97,7 +100,7 @@ void update(const Grid* original, Grid* target, const float colour_attraction[NU
 Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], const Grid* original, float repulsion_distance, float max_distance)
 {
     //get coefficient between colours (b acting on a)
-    float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_b)]) - 1][(original->colour[gridIndex(cell_pos_a)]) - 1];
+    float coeff = colour_attraction[(original->colour[gridIndex(cell_pos_a)]) - 1][(original->colour[gridIndex(cell_pos_b)]) - 1];
 
     //calculate distance between cells
     float distance = cell_pos_a.distance(cell_pos_b);
@@ -109,6 +112,7 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
     {
         //linear force increase from -1 at d=0 to 0 at repulsion_distance
         magnitude = (distance/repulsion_distance) - 1;
+        magnitude *= 2;
     }
     else if (distance < ((max_distance-repulsion_distance)/2))
     {
@@ -122,5 +126,5 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, const float colour_a
     }
 
     //return x and y component of force
-    return Vf2D{magnitude*(float(cell_pos_b.x-cell_pos_a.x)/distance), magnitude*(float(cell_pos_b.y-cell_pos_a.y)/distance)};
+    return Vf2D{magnitude * (float(cell_pos_b.x-cell_pos_a.x)/distance), magnitude * (float(cell_pos_b.y-cell_pos_a.y)/distance)};
 }
