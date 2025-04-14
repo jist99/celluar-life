@@ -7,8 +7,6 @@
 #include "raygui.h"
 #include <algorithm>
 #include <utility>
-#include <iostream>
-#include <cmath>
 #include <stdio.h>
 
 
@@ -67,6 +65,7 @@ struct GUIState {
 
     bool clear;
     bool pause;
+    bool grid_lines;
 
     CellColour selected_col;
 };
@@ -132,6 +131,9 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
     if (GuiButton({10, 480, 160, 30}, state.pause ? "Unpause" : "Pause")) {
         state.pause = !state.pause;
     }
+    if (GuiButton({10, 520, 160, 30}, "Gridlines")) {
+        state.grid_lines = !state.grid_lines;
+    }
 
     // Colour palette
     GuiLabel({10, 570, 160, 30}, "Selected:");
@@ -153,8 +155,6 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
 }
 
 void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
-    bool grid_lines = false;
-
     Particles particles_a = {};
     Particles particles_b = {};
 
@@ -174,15 +174,16 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 		ClearBackground(BLACK);
 
         draw(current_particles);
-        if (grid_lines) drawGridLines();
+        if (gui_state.grid_lines) drawGridLines();
 
         if (menu_mode) guiPanel(gui_state, colour_attraction);
+        else DrawText("Press TAB to open menu", 10, 10, 20, GRAY);
 
 		EndDrawing();
 
         //Update
         if (IsKeyPressed(KEY_G)) {
-            grid_lines = !grid_lines;
+            gui_state.grid_lines = !gui_state.grid_lines;
         }
 
         //create particles on click
@@ -197,6 +198,7 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
+        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
         if (gui_state.clear)
         {
             *current_particles = {};
@@ -206,6 +208,7 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
+        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             update(
                 current_particles, next_particles,
@@ -226,8 +229,6 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 }
 
 void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
-    bool grid_lines = false;
-
     Grid grid_a = {};
     Grid grid_b = {};
     
@@ -247,16 +248,16 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 		ClearBackground(BLACK);
 
         draw(current_grid);
-        if (grid_lines) drawGridLines();
+        if (gui_state.grid_lines) drawGridLines();
 
         if (menu_mode) guiPanel(gui_state, colour_attraction);
-        DrawFPS(0, 0);
+        else DrawText("Press TAB to open menu", 10, 10, 20, GRAY);
 
 		EndDrawing();
 
         //Update
         if (IsKeyPressed(KEY_G)) {
-            grid_lines = !grid_lines;
+            gui_state.grid_lines = !gui_state.grid_lines;
         }
 
         if (!menu_mode || GetMouseX() > 220) {
@@ -267,6 +268,7 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
+        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
         if (gui_state.clear) {
             *current_grid = {};
             gui_state.clear = false;
@@ -274,6 +276,7 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
+        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
