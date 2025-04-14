@@ -198,7 +198,7 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
-        if (IsKeyPressed(KEY_BACKSPACE)) gui_state.clear = true;
+        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
         if (gui_state.clear)
         {
             *current_particles = {};
@@ -268,7 +268,7 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
-        if (IsKeyPressed(KEY_BACKSPACE)) gui_state.clear = true;
+        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
         if (gui_state.clear) {
             *current_grid = {};
             gui_state.clear = false;
