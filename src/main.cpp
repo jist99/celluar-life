@@ -276,7 +276,7 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
-        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = true;
+        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
