@@ -199,7 +199,7 @@ void ConvertCell2Particle(Particles* p, std::string name)
     //load in cells
     Grid grid = {};
     Grid* g = &grid;
-    LoadGrid(g, name);
+    //LoadGrid(g, name);
     //for each cell, convert to a particle
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         if (g->colour[i] == CellColour::Blank) continue;

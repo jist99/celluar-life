@@ -176,6 +176,13 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
     }
 }
 
+void UpdateMenu(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS])
+{
+    for(int i = 0; i<NUM_COLOURS; i++)
+        for(int j = 0; j<NUM_COLOURS; j++)
+            std::snprintf(state.value_box_texts[i][j], 32, "%.0f", colour_attraction[i][j]);
+}
+
 void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Particles particles_a = {};
     Particles particles_b = {};
@@ -311,12 +318,14 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if(gui_state.save)
         {
-            SaveGrid(current_grid, gui_state.file_name);
+            SaveGrid(current_grid, colour_attraction, gui_state.file_name);
             gui_state.save = false;
         }
         if(gui_state.load)
         {
-            LoadGrid(current_grid, gui_state.file_name);
+            LoadGrid(current_grid, colour_attraction, gui_state.file_name);
+            //update editor to match new changed values
+            UpdateMenu(gui_state, colour_attraction);
             gui_state.load = false;
         }
 

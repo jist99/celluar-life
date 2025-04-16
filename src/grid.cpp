@@ -199,7 +199,7 @@ Vi2D gridMod(Vi2D a)
     return Vi2D{mod(a.x,GRID_WIDTH),mod(a.y,GRID_HEIGHT)};
 }
 
-void SaveGrid(Grid* g, std::string name)
+void SaveGrid(Grid* g, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
 {
     std::string path = "saved_states/" + name;
     //if not ending in .grid, add it
@@ -210,12 +210,14 @@ void SaveGrid(Grid* g, std::string name)
         std::cerr << "Failed to open file" << std::endl;
         return;
     }
+    //Write the colour attraction to file
+    file_stream.write(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
     //Write grid to file
     file_stream.write(reinterpret_cast<char*>(g), sizeof(Grid));
     file_stream.close();
 }
 
-void LoadGrid(Grid* g, std::string name)
+void LoadGrid(Grid* g, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
 {
     std::string path = "saved_states/" + name;
     //if not ending in .grid, assume it should
@@ -226,6 +228,8 @@ void LoadGrid(Grid* g, std::string name)
         std::cerr << "Failed to open file" << std::endl;
         return;
     }
+    //Read the colour attraction to file
+    file_stream.read(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
     //Read grid from file
     file_stream.read(reinterpret_cast<char*>(g), sizeof(Grid));
     file_stream.close();
