@@ -141,7 +141,7 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
 
 }
 
-void SaveParticles(Particles* p, std::string name)
+void SaveParticles(Particles* p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
 {
     std::string path = "saved_states/" + name;
     //if not ending in .particle, add it
@@ -152,6 +152,11 @@ void SaveParticles(Particles* p, std::string name)
         std::cerr << "Failed to open file" << std::endl;
         return;
     }
+    //Write the ranges to file
+    file_stream.write(reinterpret_cast<char*>(&neighbour), sizeof(neighbour));
+    file_stream.write(reinterpret_cast<char*>(&repulsion), sizeof(repulsion));
+    //Write the colour attraction to file
+    file_stream.write(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
     //write particle data, as well as size to allow reconstruction
     size_t size = p->particles.size();
     file_stream.write(reinterpret_cast<char*>(&size), sizeof(size));
@@ -159,7 +164,7 @@ void SaveParticles(Particles* p, std::string name)
     file_stream.close();
 }
 
-void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
+void LoadParticles(Particles* current_p, Particles* next_p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS],  std::string name)
 {
     //if not ending in .particle or .grid, check for instances of either, prioritising .particle
     if(!EndsWith(name,".particle") && !EndsWith(name,".grid"))
@@ -170,7 +175,7 @@ void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
     //if you are loading a .grid file, convert to particle
     if(EndsWith(name,".grid"))
     {
-        ConvertCell2Particle(current_p, name);
+        ConvertCell2Particle(current_p, neighbour, repulsion, colour_attraction, name);
         next_p->particles = current_p->particles;
     }
     else
@@ -182,6 +187,11 @@ void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
             std::cerr << "Failed to open file" << std::endl;
             return;
         }
+        //Write the ranges to file
+        file_stream.read(reinterpret_cast<char*>(&neighbour), sizeof(neighbour));
+        file_stream.read(reinterpret_cast<char*>(&repulsion), sizeof(repulsion));
+        //Read the colour attraction to file
+        file_stream.read(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
         //Read particle data into existing struct, reading size first to ensure correct amount of space
         size_t size;
         file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
@@ -192,14 +202,14 @@ void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
     }
 }
 
-void ConvertCell2Particle(Particles* p, std::string name)
+void ConvertCell2Particle(Particles* p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
 {
     //clear particles
     *p = {};
     //load in cells
     Grid grid = {};
     Grid* g = &grid;
-    //LoadGrid(g, name);
+    LoadGrid(g, neighbour, repulsion, colour_attraction, name);
     //for each cell, convert to a particle
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         if (g->colour[i] == CellColour::Blank) continue;
