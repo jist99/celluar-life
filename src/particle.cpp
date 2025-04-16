@@ -77,12 +77,12 @@ Vf2D getForceBetweenParticles(
     else if (distance < ((max_distance-repulsion_distance)/2))
     {
         //linear force increase up to max value of coeff
-        magnitude = ((2*coeff) / (max_distance - 3*repulsion_distance)) * (distance - repulsion_distance);
+        magnitude = ((2*coeff) / (max_distance - repulsion_distance)) * (distance - repulsion_distance);
     }
     else if (distance < max_distance)
     {
         //linear force decrease to 0 at max_distance
-        magnitude = -((2*coeff) / (max_distance - 3*repulsion_distance)) * (distance - max_distance);
+        magnitude = ((2*coeff) / (repulsion_distance - max_distance)) * (distance - max_distance);
     }
 
     //return x and y component of force
