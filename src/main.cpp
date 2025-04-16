@@ -281,7 +281,10 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
                 dt_acc -= UPDATE_THRESHOLD;
-                update(current_grid, next_grid, colour_attraction, GetFrameTime());
+                update(
+                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    gui_state.neighbour_range, gui_state.repulsion_range
+                );
                 std::swap(current_grid, next_grid);
                 *next_grid = {};
             }
