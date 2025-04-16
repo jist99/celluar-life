@@ -45,11 +45,9 @@ void update(
     const Grid* original,
     Grid* target,
     const float colour_attraction[NUM_COLOURS][NUM_COLOURS],
-    float dt
+    float dt,
+    int neighbour_range, int repulsion_range
 ) {
-    const int neighbour_range = 16;
-    const int repulsion_range = 2;
-
     // direction pass
     for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
         if (original->colour[i] == CellColour::Blank) continue;
