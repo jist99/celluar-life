@@ -1,6 +1,7 @@
 #include "particle.h"
 #include "grid.h" // This is just to get GRID_WIDTH and HEIGHT, maybe move it?
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <algorithm>
 
@@ -137,4 +138,35 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
     else
         return b_bottom;
 
+}
+
+void SaveState(Particles* p, std::string name)
+{
+    std::ofstream file_stream(name, std::ios::out | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //write particle data, as well as size to allow reconstruction
+    size_t size = p->particles.size();
+    file_stream.write(reinterpret_cast<char*>(&size), sizeof(size));
+    file_stream.write(reinterpret_cast<char*>(p->particles.data()), sizeof(Particle) * size);
+    file_stream.close();
+}
+
+void LoadState(Particles* p, std::string name)
+{
+    std::ifstream file_stream(name, std::ios::in | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //Read particle data into existing struct, reading size first to ensure correct amount of space
+    size_t size;
+    file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
+    p->particles.resize(size);
+    file_stream.read(reinterpret_cast<char*>(p->particles.data()), sizeof(Particle) * size);
+    file_stream.close();
 }

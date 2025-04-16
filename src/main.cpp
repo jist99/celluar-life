@@ -208,6 +208,9 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
+        if (IsKeyPressed(KEY_S)) SaveState(current_particles, "saved.particles");
+        if (IsKeyPressed(KEY_L)) LoadState(current_particles, "saved.particles");
+
         if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             update(
