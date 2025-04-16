@@ -208,8 +208,8 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
-        if (IsKeyPressed(KEY_S)) SaveState(current_particles, "saved.particles");
-        if (IsKeyPressed(KEY_L)) LoadState(current_particles, "saved.particles");
+        if (IsKeyPressed(KEY_S)) SaveParticles(current_particles, "saved.particles");
+        if (IsKeyPressed(KEY_L)) LoadParticles(current_particles, next_particles, "saved.grid");
 
         if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
@@ -278,6 +278,9 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
         }
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+
+        if (IsKeyPressed(KEY_S)) SaveGrid(current_grid, "saved.grid");
+        if (IsKeyPressed(KEY_L)) LoadGrid(current_grid, "saved.grid");
 
         if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {

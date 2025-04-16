@@ -40,3 +40,5 @@ Vf2D getForceBetweenCells(Vi2D cell_pos_a, Vi2D cell_pos_b, CellColour b_colour,
 Vi2D getShadowCell(Vi2D a, Vi2D b);
 float getShortestDistance(Vi2D a, Vi2D b);
 Vi2D gridMod(Vi2D a);
+void SaveGrid(Grid* g, std::string name);
+void LoadGrid(Grid* g, std::string name);

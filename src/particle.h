@@ -25,5 +25,6 @@ void update(
 bool particleInBounds(Vf2D pos);
 Vf2D getForceBetweenParticles(const Particle& particle_a, const Particle& particle_b, const float colour_attraction[NUM_COLOURS][NUM_COLOURS], float repulsion_distance, float max_distance);
 Vf2D getShadowPoint(Vf2D a, Vf2D b);
-void SaveState(Particles* p, std::string name);
-void LoadState(Particles* p, std::string name);
+void SaveParticles(Particles* p, std::string name);
+void LoadParticles(Particles* current_p, Particles* next_p, std::string name);
+void ConvertCell2Particle(Particles* p, std::string name);

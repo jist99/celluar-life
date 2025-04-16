@@ -140,7 +140,7 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
 
 }
 
-void SaveState(Particles* p, std::string name)
+void SaveParticles(Particles* p, std::string name)
 {
     std::ofstream file_stream(name, std::ios::out | std::ios::binary);
     if (!file_stream)
@@ -155,18 +155,46 @@ void SaveState(Particles* p, std::string name)
     file_stream.close();
 }
 
-void LoadState(Particles* p, std::string name)
+void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
 {
-    std::ifstream file_stream(name, std::ios::in | std::ios::binary);
-    if (!file_stream)
+    //if you are loading a .grid file, convert to particle
+    if(name.substr(name.size()-5,5).compare(".grid") == 0)
     {
-        std::cerr << "Failed to open file" << std::endl;
-        return;
+        ConvertCell2Particle(current_p, name);
+        next_p->particles = current_p->particles;
     }
-    //Read particle data into existing struct, reading size first to ensure correct amount of space
-    size_t size;
-    file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
-    p->particles.resize(size);
-    file_stream.read(reinterpret_cast<char*>(p->particles.data()), sizeof(Particle) * size);
-    file_stream.close();
+    else
+    {
+        std::ifstream file_stream(name, std::ios::in | std::ios::binary);
+        if (!file_stream)
+        {
+            std::cerr << "Failed to open file" << std::endl;
+            return;
+        }
+        //Read particle data into existing struct, reading size first to ensure correct amount of space
+        size_t size;
+        file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
+        current_p->particles.resize(size);
+        file_stream.read(reinterpret_cast<char*>(current_p->particles.data()), sizeof(Particle) * size);
+        file_stream.close();
+        next_p->particles = current_p->particles;
+    }
+}
+
+void ConvertCell2Particle(Particles* p, std::string name)
+{
+    //clear particles
+    *p = {};
+    //load in cells
+    Grid grid = {};
+    Grid* g = &grid;
+    LoadGrid(g, name);
+    //for each cell, convert to a particle
+    for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+        if (g->colour[i] == CellColour::Blank) continue;
+        Particle part;
+        part.colour = g->colour[i];
+        part.position = Vf2D(gridXY(i));
+        p->particles.push_back(part);
+    }
 }

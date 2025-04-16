@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 int gridIndex(Vi2D pos) {
     // No bounds checking becuase yolo
@@ -196,4 +197,30 @@ int mod(int a, int b)
 Vi2D gridMod(Vi2D a)
 {
     return Vi2D{mod(a.x,GRID_WIDTH),mod(a.y,GRID_HEIGHT)};
+}
+
+void SaveGrid(Grid* g, std::string name)
+{
+    std::ofstream file_stream(name, std::ios::out | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //Write grid to file
+    file_stream.write(reinterpret_cast<char*>(g), sizeof(Grid));
+    file_stream.close();
+}
+
+void LoadGrid(Grid* g, std::string name)
+{
+    std::ifstream file_stream(name, std::ios::in | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //Read grid from file
+    file_stream.read(reinterpret_cast<char*>(g), sizeof(Grid));
+    file_stream.close();
 }
