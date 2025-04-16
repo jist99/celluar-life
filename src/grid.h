@@ -42,3 +42,4 @@ float getShortestDistance(Vi2D a, Vi2D b);
 Vi2D gridMod(Vi2D a);
 void SaveGrid(Grid* g, std::string name);
 void LoadGrid(Grid* g, std::string name);
+bool EndsWith(std::string str, std::string end);

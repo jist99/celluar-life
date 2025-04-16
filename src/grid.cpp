@@ -201,7 +201,10 @@ Vi2D gridMod(Vi2D a)
 
 void SaveGrid(Grid* g, std::string name)
 {
-    std::ofstream file_stream(name, std::ios::out | std::ios::binary);
+    std::string path = "saved_states/" + name;
+    //if not ending in .grid, add it
+    if(!EndsWith(path,".grid"))  path += ".grid";
+    std::ofstream file_stream(path, std::ios::out | std::ios::binary);
     if (!file_stream)
     {
         std::cerr << "Failed to open file" << std::endl;
@@ -214,7 +217,10 @@ void SaveGrid(Grid* g, std::string name)
 
 void LoadGrid(Grid* g, std::string name)
 {
-    std::ifstream file_stream(name, std::ios::in | std::ios::binary);
+    std::string path = "saved_states/" + name;
+    //if not ending in .grid, assume it should
+    if(!EndsWith(path,".grid"))  path += ".grid";
+    std::ifstream file_stream(path, std::ios::in | std::ios::binary);
     if (!file_stream)
     {
         std::cerr << "Failed to open file" << std::endl;
@@ -223,4 +229,10 @@ void LoadGrid(Grid* g, std::string name)
     //Read grid from file
     file_stream.read(reinterpret_cast<char*>(g), sizeof(Grid));
     file_stream.close();
+}
+
+bool EndsWith(std::string str, std::string end)
+{
+    if(end.size() > str.size()) return false;
+    return str.substr(str.size()-end.size(),end.size()).compare(end) == 0;
 }

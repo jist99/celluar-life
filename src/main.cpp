@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <utility>
 #include <stdio.h>
+#include <iostream>
+#include <cstring>
 
 
 #define PARTICLE
@@ -66,14 +68,22 @@ struct GUIState {
     bool clear;
     bool pause;
     bool grid_lines;
+    bool save;
+    bool load;
 
     CellColour selected_col;
+
+    bool filename_editmode;
+    char file_name[64];
 };
 
 void initGuiState(GUIState& gui_state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     gui_state.neighbour_range = 16;
     gui_state.repulsion_range = 2;
     gui_state.selected_col = CellColour::Blue;
+    std::strcpy(gui_state.file_name, "");
+    gui_state.save = false;
+    gui_state.load = false;
 
     for (int x = 0; x < NUM_COLOURS; x++) {
         for (int y = 0; y < NUM_COLOURS; y++) {
@@ -152,6 +162,18 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
             DrawRectangleRec(rect, getRaylibColour(col));
         }
     }
+
+    // File save and load
+    GuiLabel({10, 680, 160, 30}, "File Name:");
+    if (GuiTextBox({10, 710, 160, 30}, state.file_name, 64, state.filename_editmode)) {
+        state.filename_editmode = !state.filename_editmode;
+    }
+    if (GuiButton({10, 750, 75, 30}, "Save")) {
+        state.save = true;
+    }
+    if (GuiButton({95, 750, 75, 30}, "Load")) {
+        state.load = true;
+    }
 }
 
 void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
@@ -208,8 +230,16 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
-        if (IsKeyPressed(KEY_S)) SaveParticles(current_particles, "saved.particles");
-        if (IsKeyPressed(KEY_L)) LoadParticles(current_particles, next_particles, "saved.grid");
+        if(gui_state.save)
+        {
+            SaveParticles(current_particles, gui_state.file_name);
+            gui_state.save = false;
+        }
+        if(gui_state.load)
+        {
+            LoadParticles(current_particles, next_particles, gui_state.file_name);
+            gui_state.load = false;
+        }
 
         if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
@@ -279,8 +309,16 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
-        if (IsKeyPressed(KEY_S)) SaveGrid(current_grid, "saved.grid");
-        if (IsKeyPressed(KEY_L)) LoadGrid(current_grid, "saved.grid");
+        if(gui_state.save)
+        {
+            SaveGrid(current_grid, gui_state.file_name);
+            gui_state.save = false;
+        }
+        if(gui_state.load)
+        {
+            LoadGrid(current_grid, gui_state.file_name);
+            gui_state.load = false;
+        }
 
         if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {

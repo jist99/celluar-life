@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
 
 void update(
     const Particles* original, Particles* target,
@@ -142,7 +143,10 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
 
 void SaveParticles(Particles* p, std::string name)
 {
-    std::ofstream file_stream(name, std::ios::out | std::ios::binary);
+    std::string path = "saved_states/" + name;
+    //if not ending in .particle, add it
+    if(!EndsWith(path,".particle"))  path += ".particle";
+    std::ofstream file_stream(path, std::ios::out | std::ios::binary);
     if (!file_stream)
     {
         std::cerr << "Failed to open file" << std::endl;
@@ -157,15 +161,22 @@ void SaveParticles(Particles* p, std::string name)
 
 void LoadParticles(Particles* current_p, Particles* next_p, std::string name)
 {
+    //if not ending in .particle or .grid, check for instances of either, prioritising .particle
+    if(!EndsWith(name,".particle") && !EndsWith(name,".grid"))
+    {
+        if(std::filesystem::exists("saved_states/" + name + ".particle")) name += ".particle";
+        else if(std::filesystem::exists("saved_states/" + name + ".grid")) name += ".grid";
+    }
     //if you are loading a .grid file, convert to particle
-    if(name.substr(name.size()-5,5).compare(".grid") == 0)
+    if(EndsWith(name,".grid"))
     {
         ConvertCell2Particle(current_p, name);
         next_p->particles = current_p->particles;
     }
     else
     {
-        std::ifstream file_stream(name, std::ios::in | std::ios::binary);
+        std::string path = "saved_states/" + name;
+        std::ifstream file_stream(path, std::ios::in | std::ios::binary);
         if (!file_stream)
         {
             std::cerr << "Failed to open file" << std::endl;
