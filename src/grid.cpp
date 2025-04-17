@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 int gridIndex(Vi2D pos) {
     // No bounds checking becuase yolo
@@ -196,4 +197,52 @@ int mod(int a, int b)
 Vi2D gridMod(Vi2D a)
 {
     return Vi2D{mod(a.x,GRID_WIDTH),mod(a.y,GRID_HEIGHT)};
+}
+
+void SaveGrid(Grid* g, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
+{
+    std::string path = "saved_states/" + name;
+    //if not ending in .grid, add it
+    if(!EndsWith(path,".grid"))  path += ".grid";
+    std::ofstream file_stream(path, std::ios::out | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //Write the ranges to file
+    file_stream.write(reinterpret_cast<char*>(&neighbour), sizeof(neighbour));
+    file_stream.write(reinterpret_cast<char*>(&repulsion), sizeof(repulsion));
+    //Write the colour attraction to file
+    file_stream.write(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
+    //Write grid to file
+    file_stream.write(reinterpret_cast<char*>(g), sizeof(Grid));
+    file_stream.close();
+}
+
+void LoadGrid(Grid* g, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name)
+{
+    std::string path = "saved_states/" + name;
+    //if not ending in .grid, assume it should
+    if(!EndsWith(path,".grid"))  path += ".grid";
+    std::ifstream file_stream(path, std::ios::in | std::ios::binary);
+    if (!file_stream)
+    {
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    //Write the ranges to file
+    file_stream.read(reinterpret_cast<char*>(&neighbour), sizeof(neighbour));
+    file_stream.read(reinterpret_cast<char*>(&repulsion), sizeof(repulsion));
+    //Read the colour attraction to file
+    file_stream.read(reinterpret_cast<char*>(colour_attraction), sizeof(float) * NUM_COLOURS * NUM_COLOURS);
+    //Read grid from file
+    file_stream.read(reinterpret_cast<char*>(g), sizeof(Grid));
+    file_stream.close();
+}
+
+bool EndsWith(std::string str, std::string end)
+{
+    if(end.size() > str.size()) return false;
+    return str.substr(str.size()-end.size(),end.size()).compare(end) == 0;
 }
