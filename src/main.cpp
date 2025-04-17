@@ -304,6 +304,18 @@ void cellularGame(
             dt_acc += GetFrameTime();
         }
 
+        // Manual stepping
+        if (gui_state.pause) {
+            if (IsKeyPressed(KEY_RIGHT)) {
+                update(
+                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    *gui_state.neighbour_range, *gui_state.repulsion_range
+                );
+                std::swap(current_grid, next_grid);
+                *next_grid = {};
+            }
+        }
+
         if (IsKeyPressed(KEY_ESCAPE)) {
             menu_mode = false;
             // TODO: Do the return next turn after a draw to remove the menu
