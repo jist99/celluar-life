@@ -58,9 +58,9 @@ int mouseToGrid() {
 
 struct GUIState {
     bool repulsion_editmode;
-    int repulsion_range;
+    int *repulsion_range;
     bool neighbour_editmode;
-    int neighbour_range;
+    int *neighbour_range;
 
     char value_box_texts[NUM_COLOURS][NUM_COLOURS][32];
     bool value_box_edits[NUM_COLOURS][NUM_COLOURS];
@@ -77,9 +77,14 @@ struct GUIState {
     char file_name[64];
 };
 
-void initGuiState(GUIState& gui_state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
-    gui_state.neighbour_range = 16;
-    gui_state.repulsion_range = 2;
+void initGuiState(
+    GUIState& gui_state,
+    float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    int *repulsion_range,
+    int *neighbour_range
+) {
+    gui_state.repulsion_range = repulsion_range;
+    gui_state.neighbour_range = neighbour_range;
     gui_state.selected_col = CellColour::Blue;
     std::strcpy(gui_state.file_name, "");
     gui_state.save = false;
@@ -97,13 +102,13 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
 
     // Repulsion settings
     GuiLabel({10, 10, 160, 30}, "Repulsion Range:");
-    if (GuiValueBox({10, 40, 160, 30}, "", &state.repulsion_range, 0, 50, state.repulsion_editmode)) {
+    if (GuiValueBox({10, 40, 160, 30}, "", state.repulsion_range, 0, 50, state.repulsion_editmode)) {
         state.repulsion_editmode = !state.repulsion_editmode;
     }
 
     // Neighbour range settings
     GuiLabel({10, 90, 160, 30}, "Neigbour Range:");
-    if (GuiValueBox({10, 120, 160, 30}, "", &state.neighbour_range, 0, 100, state.neighbour_editmode)) {
+    if (GuiValueBox({10, 120, 160, 30}, "", state.neighbour_range, 0, 100, state.neighbour_editmode)) {
         state.neighbour_editmode = !state.neighbour_editmode;
     }
 
@@ -183,7 +188,11 @@ void UpdateMenu(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOUR
             std::snprintf(state.value_box_texts[i][j], 32, "%.0f", colour_attraction[i][j]);
 }
 
-void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+void particleGame(
+    float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    int *repulsion_range,
+    int *neighbour_range
+) {
     Particles particles_a = {};
     Particles particles_b = {};
 
@@ -193,7 +202,7 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Vf2D cell_size = getCellSize();
 
     GUIState gui_state = GUIState{0};
-    initGuiState(gui_state, colour_attraction);
+    initGuiState(gui_state, colour_attraction, repulsion_range, neighbour_range);
     bool menu_mode = false;
 
 	// game loop
@@ -245,12 +254,25 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if(gui_state.save)
         {
-            SaveParticles(current_particles, gui_state.neighbour_range, gui_state.repulsion_range, colour_attraction, gui_state.file_name);
+            SaveParticles(
+                current_particles,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
             gui_state.save = false;
         }
         if(gui_state.load)
         {
-            LoadParticles(current_particles, next_particles, gui_state.neighbour_range, gui_state.repulsion_range, colour_attraction, gui_state.file_name);
+            LoadParticles(
+                current_particles,
+                next_particles,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
             UpdateMenu(gui_state, colour_attraction);
             gui_state.load = false;
         }
@@ -260,7 +282,7 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
                 current_particles, next_particles,
                 colour_attraction,
                 GetFrameTime(),
-                gui_state.neighbour_range, gui_state.repulsion_range
+                *gui_state.neighbour_range, *gui_state.repulsion_range
             );
             current_particles->particles = next_particles->particles;
         }
@@ -274,7 +296,11 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 	}
 }
 
-void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
+void cellularGame(
+    float colour_attraction[NUM_COLOURS][NUM_COLOURS],
+    int *repulsion_range,
+    int *neighbour_range
+) {
     Grid grid_a = {};
     Grid grid_b = {};
     
@@ -282,7 +308,7 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
     Grid* next_grid = &grid_b;
 
     GUIState gui_state = GUIState{0};
-    initGuiState(gui_state, colour_attraction);
+    initGuiState(gui_state, colour_attraction, repulsion_range, neighbour_range);
     bool menu_mode = false;
 
     float dt_acc = 0;
@@ -328,12 +354,23 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 
         if(gui_state.save)
         {
-            SaveGrid(current_grid, gui_state.neighbour_range, gui_state.repulsion_range, colour_attraction, gui_state.file_name);
+            SaveGrid(
+                current_grid,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
             gui_state.save = false;
         }
         if(gui_state.load)
         {
-            LoadGrid(current_grid, gui_state.neighbour_range, gui_state.repulsion_range, colour_attraction, gui_state.file_name);
+            LoadGrid(current_grid,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
             //update editor to match new changed values
             UpdateMenu(gui_state, colour_attraction);
             gui_state.load = false;
@@ -345,12 +382,24 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
                 dt_acc -= UPDATE_THRESHOLD;
                 update(
                     current_grid, next_grid, colour_attraction, GetFrameTime(),
-                    gui_state.neighbour_range, gui_state.repulsion_range
+                    *gui_state.neighbour_range, *gui_state.repulsion_range
                 );
                 std::swap(current_grid, next_grid);
                 *next_grid = {};
             }
             dt_acc += GetFrameTime();
+        }
+
+        // Manual stepping
+        if (gui_state.pause) {
+            if (IsKeyPressed(KEY_RIGHT)) {
+                update(
+                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    *gui_state.neighbour_range, *gui_state.repulsion_range
+                );
+                std::swap(current_grid, next_grid);
+                *next_grid = {};
+            }
         }
 
         if (IsKeyPressed(KEY_ESCAPE)) {
@@ -377,6 +426,8 @@ int main ()
             colour_attraction[x][y] = (x == y);
         }
     }
+    int neighbour_range = 16;
+    int repulsion_range = 2;
 
     // Ask the user which game they want to start particle or cellular
     while (!WindowShouldClose()) {
@@ -409,9 +460,9 @@ int main ()
         }
 
         if (cellular_game) {
-            cellularGame(colour_attraction);
+            cellularGame(colour_attraction, &repulsion_range, &neighbour_range);
         } else {
-            particleGame(colour_attraction);
+            particleGame(colour_attraction, &repulsion_range, &neighbour_range);
         }
     }
 
