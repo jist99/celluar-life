@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <utility>
 #include <stdio.h>
+#include <iostream>
+#include <cstring>
 
 
 #define PARTICLE
@@ -66,8 +68,13 @@ struct GUIState {
     bool clear;
     bool pause;
     bool grid_lines;
+    bool save;
+    bool load;
 
     CellColour selected_col;
+
+    bool filename_editmode;
+    char file_name[64];
 };
 
 void initGuiState(
@@ -79,6 +86,9 @@ void initGuiState(
     gui_state.repulsion_range = repulsion_range;
     gui_state.neighbour_range = neighbour_range;
     gui_state.selected_col = CellColour::Blue;
+    std::strcpy(gui_state.file_name, "");
+    gui_state.save = false;
+    gui_state.load = false;
 
     for (int x = 0; x < NUM_COLOURS; x++) {
         for (int y = 0; y < NUM_COLOURS; y++) {
@@ -157,6 +167,25 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
             DrawRectangleRec(rect, getRaylibColour(col));
         }
     }
+
+    // File save and load
+    GuiLabel({10, 680, 160, 30}, "File Name:");
+    if (GuiTextBox({10, 710, 160, 30}, state.file_name, 64, state.filename_editmode)) {
+        state.filename_editmode = !state.filename_editmode;
+    }
+    if (GuiButton({10, 750, 75, 30}, "Save")) {
+        state.save = true;
+    }
+    if (GuiButton({95, 750, 75, 30}, "Load")) {
+        state.load = true;
+    }
+}
+
+void UpdateMenu(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS])
+{
+    for(int i = 0; i<NUM_COLOURS; i++)
+        for(int j = 0; j<NUM_COLOURS; j++)
+            std::snprintf(state.value_box_texts[i][j], 32, "%.0f", colour_attraction[i][j]);
 }
 
 void particleGame(
@@ -191,10 +220,6 @@ void particleGame(
 		EndDrawing();
 
         //Update
-        if (IsKeyPressed(KEY_G)) {
-            gui_state.grid_lines = !gui_state.grid_lines;
-        }
-
         //create particles on click
         if (!menu_mode || GetMouseX() > 220) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -207,7 +232,19 @@ void particleGame(
             }
         }
 
-        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+        // When we're writing the filename don't accept keyboard shortcuts
+        if (!gui_state.filename_editmode) {
+            if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+
+            if (IsKeyPressed(KEY_G)) {
+                gui_state.grid_lines = !gui_state.grid_lines;
+            }
+
+            if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+
+            if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
+        }
+
         if (gui_state.clear)
         {
             *current_particles = {};
@@ -215,9 +252,31 @@ void particleGame(
             gui_state.clear = false;
         } 
 
-        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+        if(gui_state.save)
+        {
+            SaveParticles(
+                current_particles,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
+            gui_state.save = false;
+        }
+        if(gui_state.load)
+        {
+            LoadParticles(
+                current_particles,
+                next_particles,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
+            UpdateMenu(gui_state, colour_attraction);
+            gui_state.load = false;
+        }
 
-        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             update(
                 current_particles, next_particles,
@@ -269,10 +328,6 @@ void cellularGame(
 		EndDrawing();
 
         //Update
-        if (IsKeyPressed(KEY_G)) {
-            gui_state.grid_lines = !gui_state.grid_lines;
-        }
-
         if (!menu_mode || GetMouseX() > 220) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 current_grid->colour[mouseToGrid()] = gui_state.selected_col;
@@ -281,15 +336,46 @@ void cellularGame(
             }
         }
 
-        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+        // When we're writing the filename don't accept keyboard shortcuts
+        if (!gui_state.filename_editmode) {
+            if (IsKeyPressed(KEY_G)) {
+                gui_state.grid_lines = !gui_state.grid_lines;
+            }
+
+            if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+            if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+            if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
+        }
+
         if (gui_state.clear) {
             *current_grid = {};
             gui_state.clear = false;
         }
 
-        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+        if(gui_state.save)
+        {
+            SaveGrid(
+                current_grid,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
+            gui_state.save = false;
+        }
+        if(gui_state.load)
+        {
+            LoadGrid(current_grid,
+                *gui_state.neighbour_range,
+                *gui_state.repulsion_range,
+                colour_attraction,
+                gui_state.file_name
+            );
+            //update editor to match new changed values
+            UpdateMenu(gui_state, colour_attraction);
+            gui_state.load = false;
+        }
 
-        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
