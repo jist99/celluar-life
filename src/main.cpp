@@ -211,10 +211,6 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 		EndDrawing();
 
         //Update
-        if (IsKeyPressed(KEY_G)) {
-            gui_state.grid_lines = !gui_state.grid_lines;
-        }
-
         //create particles on click
         if (!menu_mode || GetMouseX() > 220) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -227,15 +223,25 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
-        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+        // When we're writing the filename don't accept keyboard shortcuts
+        if (!gui_state.filename_editmode) {
+            if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+
+            if (IsKeyPressed(KEY_G)) {
+                gui_state.grid_lines = !gui_state.grid_lines;
+            }
+
+            if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+
+            if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
+        }
+
         if (gui_state.clear)
         {
             *current_particles = {};
             *next_particles = {};
             gui_state.clear = false;
         } 
-
-        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
         if(gui_state.save)
         {
@@ -249,7 +255,6 @@ void particleGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             gui_state.load = false;
         }
 
-        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             update(
                 current_particles, next_particles,
@@ -297,10 +302,6 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
 		EndDrawing();
 
         //Update
-        if (IsKeyPressed(KEY_G)) {
-            gui_state.grid_lines = !gui_state.grid_lines;
-        }
-
         if (!menu_mode || GetMouseX() > 220) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 current_grid->colour[mouseToGrid()] = gui_state.selected_col;
@@ -309,13 +310,21 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             }
         }
 
-        if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+        // When we're writing the filename don't accept keyboard shortcuts
+        if (!gui_state.filename_editmode) {
+            if (IsKeyPressed(KEY_G)) {
+                gui_state.grid_lines = !gui_state.grid_lines;
+            }
+
+            if (IsKeyPressed(KEY_C)) gui_state.clear = true;
+            if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
+            if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
+        }
+
         if (gui_state.clear) {
             *current_grid = {};
             gui_state.clear = false;
         }
-
-        if (IsKeyPressed(KEY_TAB)) menu_mode = !menu_mode;
 
         if(gui_state.save)
         {
@@ -330,7 +339,6 @@ void cellularGame(float colour_attraction[NUM_COLOURS][NUM_COLOURS]) {
             gui_state.load = false;
         }
 
-        if (IsKeyPressed(KEY_SPACE)) gui_state.pause = !gui_state.pause;
         if (!gui_state.pause) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
