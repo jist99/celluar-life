@@ -398,7 +398,7 @@ void cellularGame(
             {
                 dt_acc -= UPDATE_THRESHOLD;
                 update(
-                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    current_grid, next_grid, colour_attraction, UPDATE_THRESHOLD,
                     *gui_state.neighbour_range, *gui_state.repulsion_range
                 );
                 std::swap(current_grid, next_grid);
