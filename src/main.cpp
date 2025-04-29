@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstring>
+#include <ctime>
 
 
 #define PARTICLE
