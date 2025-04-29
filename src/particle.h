@@ -28,3 +28,4 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b);
 void SaveParticles(Particles* p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name);
 void LoadParticles(Particles* current_p, Particles* next_p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name);
 void ConvertCell2Particle(Particles* p, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name);
+void perturb(Particles* particles);

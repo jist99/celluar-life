@@ -1,5 +1,7 @@
 #include "particle.h"
 #include "grid.h" // This is just to get GRID_WIDTH and HEIGHT, maybe move it?
+#include "raylib.h"
+#include "vector2d.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -217,5 +219,11 @@ void ConvertCell2Particle(Particles* p, int& neighbour, int& repulsion, float co
         part.colour = g->colour[i];
         part.position = Vf2D(gridXY(i));
         p->particles.push_back(part);
+    }
+}
+
+void perturb(Particles *particles) {
+    for (auto &p : particles->particles) {
+        p.position += Vi2D{GetRandomValue(-1, 1), GetRandomValue(-1, 1)};
     }
 }

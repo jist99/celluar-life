@@ -2,7 +2,7 @@
 #include "vector2d.h"
 #include "grid.h"
 #include "utils.h"
-#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -245,4 +245,15 @@ bool EndsWith(std::string str, std::string end)
 {
     if(end.size() > str.size()) return false;
     return str.substr(str.size()-end.size(),end.size()).compare(end) == 0;
+}
+
+void perturb(const Grid *original, Grid *target) {
+    for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+        if (original->colour[i] == CellColour::Blank) continue;
+        Vi2D pos = gridXY(i);
+
+        Vi2D perturb = {GetRandomValue(-1, 1), GetRandomValue(-1, 1)};
+        int perturbed_index = gridIndex(perturb + pos);
+        target->colour[perturbed_index] = original->colour[i];
+    } 
 }
