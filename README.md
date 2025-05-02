@@ -9,7 +9,7 @@ We aim to support the main 3 desktop platforms:
 * MacOS
 
 ## Note for all Platforms
-* To compile the program in release mode for optimal performance, use 'make release=config=release_x64' instead of 'make'
+* To compile the program in release mode for optimal performance, use 'make config=release_x64' instead of 'make'
 
 ## VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
