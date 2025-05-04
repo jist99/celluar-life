@@ -1,6 +1,16 @@
 # Cellular Life
 An implementation of Particle Life using Cells
 
+# Using Sample Inputs
+A selection of sample inputs reflecting the cases analysed in the "Results" section of the report are avalible in the saved_sates directory.
+To run these simply load the files in using the provided interface as shown below.
+
+Notes:
+* .grid files can be loaded into both grid and particle simulators, .particle can only be loaded into particle
+* file endings (".grid"/".particle") can be ommitted, with the current simulators file ending assumed if duplicate file names exist
+
+![loading](https://github.com/user-attachments/assets/321710c8-0737-433c-9bda-fdd5d87abe5d)
+
 # Building
 ## Supported Platforms
 We aim to support the main 3 desktop platforms:
