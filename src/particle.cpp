@@ -118,19 +118,27 @@ float mod(float a, float b)
 //function to get a "shadow" version of b off of the screen that repsresents a point equivilent to wrapping from b across the screen to a
 Vf2D getShadowPoint(Vf2D a, Vf2D b)
 {
-    //calculate shadow versions of b on 4 adjacent plains extending offscreen in each direction
+    //calculate shadow versions of b on 8 adjacent plains extending offscreen in each direction
     Vf2D b_left = {b.x-GRID_WIDTH, b.y};
     Vf2D b_right = {b.x+GRID_WIDTH, b.y};
     Vf2D b_top = {b.x, b.y-GRID_HEIGHT};
     Vf2D b_bottom = {b.x, b.y+GRID_HEIGHT};
+    Vf2D b_top_left = {b.x-GRID_WIDTH, b.y-GRID_HEIGHT};
+    Vf2D b_bottom_left = {b.x-GRID_WIDTH, b.y+GRID_HEIGHT};
+    Vf2D b_top_right = {b.x+GRID_WIDTH, b.y-GRID_HEIGHT};
+    Vf2D b_bottom_right = {b.x+GRID_WIDTH, b.y+GRID_HEIGHT};
 
     //find closest point to a
     float left_dist = a.distance(b_left);
     float right_dist = a.distance(b_right);
     float top_dist = a.distance(b_top);
     float bottom_dist = a.distance(b_bottom);
+    float top_left_dist = a.distance(b_top_left);
+    float bottom_left_dist = a.distance(b_bottom_left);
+    float top_right_dist = a.distance(b_top_right);
+    float bottom_right_dist = a.distance(b_bottom_right);
 
-    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist});
+    float min_distance = std::min({left_dist, right_dist, top_dist, bottom_dist, top_left_dist, bottom_left_dist, top_right_dist, bottom_right_dist});
 
     if(min_distance == left_dist)
         return b_left;
@@ -138,8 +146,16 @@ Vf2D getShadowPoint(Vf2D a, Vf2D b)
         return b_right;
     else if(min_distance == top_dist)
         return b_top;
-    else
+    else if (min_distance == bottom_dist)
         return b_bottom;
+    else if (min_distance == top_left_dist)
+        return b_top_left;
+    else if (min_distance == bottom_left_dist)
+        return b_bottom_left;
+    else if (min_distance == top_right_dist)
+        return b_top_right;
+    else
+        return b_bottom_right;
 
 }
 
