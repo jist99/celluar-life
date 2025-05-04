@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstring>
+#include <ctime>
 
 
 #define PARTICLE
@@ -70,6 +71,7 @@ struct GUIState {
     bool grid_lines;
     bool save;
     bool load;
+    bool perturb;
 
     CellColour selected_col;
 
@@ -179,6 +181,10 @@ void guiPanel(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS]
     if (GuiButton({95, 750, 75, 30}, "Load")) {
         state.load = true;
     }
+
+    if (GuiButton({10, 800, 160, 30}, "Perturb")) {
+        state.perturb = true;
+    }
 }
 
 void UpdateMenu(GUIState& state, float colour_attraction[NUM_COLOURS][NUM_COLOURS])
@@ -275,6 +281,11 @@ void particleGame(
             );
             UpdateMenu(gui_state, colour_attraction);
             gui_state.load = false;
+        }
+
+        if (gui_state.perturb) {
+            gui_state.perturb = false;
+            perturb(current_particles);
         }
 
         if (!gui_state.pause) {
@@ -376,12 +387,19 @@ void cellularGame(
             gui_state.load = false;
         }
 
+        if (gui_state.perturb) {
+            gui_state.perturb = false;
+            perturb(current_grid, next_grid);
+            std::swap(current_grid, next_grid);
+            *next_grid = {};
+        }
+
         if (!gui_state.pause) {
             if(dt_acc >= UPDATE_THRESHOLD)
             {
                 dt_acc -= UPDATE_THRESHOLD;
                 update(
-                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    current_grid, next_grid, colour_attraction, UPDATE_THRESHOLD,
                     *gui_state.neighbour_range, *gui_state.repulsion_range
                 );
                 std::swap(current_grid, next_grid);
@@ -394,7 +412,7 @@ void cellularGame(
         if (gui_state.pause) {
             if (IsKeyPressed(KEY_RIGHT)) {
                 update(
-                    current_grid, next_grid, colour_attraction, GetFrameTime(),
+                    current_grid, next_grid, colour_attraction, UPDATE_THRESHOLD,
                     *gui_state.neighbour_range, *gui_state.repulsion_range
                 );
                 std::swap(current_grid, next_grid);
@@ -412,6 +430,8 @@ void cellularGame(
 
 int main ()
 {
+    std::srand(std::time({})); // use time as seed
+
 	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 

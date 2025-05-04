@@ -5,8 +5,11 @@ An implementation of Particle Life using Cells
 ## Supported Platforms
 We aim to support the main 3 desktop platforms:
 * Windows
-* Linux
+* Linux (Precompiled binary for School of Computing Machines included)
 * MacOS
+
+## Note for all Platforms
+* To compile the program in release mode for optimal performance, use 'make config=release_x64' instead of 'make'
 
 ## VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
@@ -50,6 +53,13 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 * CD back to the root
 * run `make`
 * you are good to go
+
+## Note on School of Computing machines
+* We have included a precompiled binary to run the application of SoC machines, availible from Soc_LinuxBinaries/cellular-life, simply execute this to run the program
+* If you wish to compile on SoC machines: premake will NOT automatically download raylib, you must:
+* Download raylib from https://github.com/raysan5/raylib/archive/refs/heads/master.zip
+* Unzip this file to build/external
+* Then you can follow the usual Linux Users Instructions
 
 ## MacOS Users
 * CD into the build folder

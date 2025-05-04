@@ -43,3 +43,4 @@ Vi2D gridMod(Vi2D a);
 void SaveGrid(Grid* g, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name);
 void LoadGrid(Grid* g, int& neighbour, int& repulsion, float colour_attraction[NUM_COLOURS][NUM_COLOURS], std::string name);
 bool EndsWith(std::string str, std::string end);
+void perturb(const Grid* original, Grid* target);
