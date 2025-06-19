@@ -64,13 +64,6 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 * run `make`
 * you are good to go
 
-## Note on School of Computing machines
-* We have included a precompiled binary to run the application of SoC machines, availible from Soc_LinuxBinaries/cellular-life, simply execute this to run the program
-* If you wish to compile on SoC machines: premake will NOT automatically download raylib, you must:
-* Download raylib from https://github.com/raysan5/raylib/archive/refs/heads/master.zip
-* Unzip this file to build/external
-* Then you can follow the usual Linux Users Instructions
-
 ## MacOS Users
 * CD into the build folder
 * run `./premake5.osx gmake2`
