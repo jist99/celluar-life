@@ -2,7 +2,7 @@
 An implementation of Particle Life using Cells
 
 # Using Sample Inputs
-A selection of sample inputs reflecting the cases analysed in the "Results" section of the report are avalible in the saved_sates directory.
+A selection of sample inputs reflecting the cases analysed in the "Results" section of the report are avalible in the saved_states directory.
 To run these simply load the files in using the provided interface as shown below.
 
 Notes:
