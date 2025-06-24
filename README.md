@@ -54,7 +54,6 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 ### Microsoft Visual Studio
 * Run `build-VisualStudio2022.bat`
 * double click the `.sln` file that is generated
-* develop your game
 * you are good to go
 
 ## Linux Users
