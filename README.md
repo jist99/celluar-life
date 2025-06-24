@@ -15,7 +15,7 @@ Notes:
 ## Supported Platforms
 We aim to support the main 3 desktop platforms:
 * Windows
-* Linux (Precompiled binary for School of Computing Machines included)
+* Linux
 * MacOS
 
 ## Note for all Platforms
